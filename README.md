@@ -6,7 +6,7 @@ It is project for Advanced Topics of Object-Oriented Programming.
 
 ![Ticket to Ride Game](https://upload.wikimedia.org/wikipedia/en/9/92/Ticket_to_Ride_Board_Game_Box_EN.jpg)  
 
-
+![Ticket to Ride Map](https://cdn.arstechnica.net/wp-content/uploads/2019/10/USA.png)
 ## **Project Summary**  
 ### **Goal**
 Develop an **object-oriented** implementation of *Ticket to Ride*:
