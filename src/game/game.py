@@ -1,6 +1,6 @@
 from collections import Counter
 from map import Map, City, CityConnection, get_city_by_name
-from cards import DestinationTicketCard, TrainCardsDeck, DestinationTicketsDeck
+from cards import DestinationTicketCard, TrainCardsDeck, DestinationTicketsDeck, TrainCard
 from player import Player
 
 class Game:
@@ -65,6 +65,11 @@ def main():
     )
 
     print("\nGame created successfully!")
+    print(game)
+
+
+    list(get_city_by_name(map.cities, "Warszawa").connections)[0].cost = [TrainCard.BLACK for _ in range(8)]
+    print("\nUpdated connection cost:")
     print(game)
 
 if __name__ == "__main__":

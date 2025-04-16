@@ -12,24 +12,31 @@ class City:
 
         connections_str = ""
 
-        for conn in self.connections:
-            connections_str += f"{conn.city_dest.name} (cost: "
+        for connection in self.connections:
+            connections_str += f"  {connection}\n"
 
-            for j in range(len(conn.cost)):
-                connections_str += f"{conn.cost[j].name} "
-            connections_str += "), "
-
-        return f"{self.name} -> [{connections_str}]\n"
+        return f"City: {self.name}\nConnections:\n{connections_str}"
 
 
 class CityConnection:
 
-    def __init__(self, cost: list[TrainCard], city_dest: City):
-        self.cost = cost
-        self.city_dest = city_dest
+    def __init__(self, cost: list[TrainCard], connected_cities: {City}):
+
+        self.cost = cost  # List of train cards needed to create a connection
+        self.cities = connected_cities  # Set of connected cities; number of cities should be 2
+
+        if len(connected_cities) != 2:
+            raise ValueError("CityConnection should connect exactly two cities")
+        
+        connected_cities = list(connected_cities)
+        connected_cities[0].connections.append(self)
+        connected_cities[1].connections.append(self)
 
     def __str__(self):
-        return f"CityConnection: {self.city_dest.name} (cost: {len(self.cost)} {self.cost[0].name})"
+
+        cities = list(self.cities)
+        return f"CityConnection: {cities[0].name} <-> {cities[1].name}, Cost: [{', '.join(str(card) for card in self.cost)}]"
+
 
 
 class Map:
@@ -37,19 +44,13 @@ class Map:
     def __init__(self, cities: list[City]):
         self.cities = cities
 
-    def add_connection(self, city_src, city_connection: CityConnection):
+    def add_connection(self, city_connection: CityConnection):
         """
         Adds a connection between two cities. Setting connection info for both cities.
         """
 
-        city_src.connections.append(city_connection)
-        city_connection.city_dest.connections.append(
-            CityConnection(cost=city_connection.cost, city_dest=city_src)
-        )  # Add reverse connection
-
     def __str__(self):
         return "Map: [" + ", ".join(str(city) for city in self.cities) + "]"
-
 
     def add_example_connections(self):
         """
@@ -57,35 +58,36 @@ class Map:
         """
 
         self.add_connection(
-            get_city_by_name(self.cities, "Warszawa"),
             CityConnection(
-                cost=[TrainCard.RED for _ in range(4)], city_dest=get_city_by_name(self.cities, "Wroclaw")
-            ),
+                [TrainCard.PINK for _ in range(4)],
+                {
+                    get_city_by_name(self.cities, "Warszawa"),
+                    get_city_by_name(self.cities, "Wroclaw"),
+                },
+            )
         )
 
         self.add_connection(
-            get_city_by_name(self.cities, "Wroclaw"),
             CityConnection(
-                cost=[TrainCard.BLUE for _ in range(3)],
-                city_dest=get_city_by_name(self.cities, "Krakow"),
-            ),
+                [TrainCard.YELLOW for _ in range(3)],
+                {
+                    get_city_by_name(self.cities, "Wroclaw"),
+                    get_city_by_name(self.cities, "Krakow"),
+                },
+            )
         )
 
-        self.add_connection(
-            get_city_by_name(self.cities, "Krakow"),
-            CityConnection(
-                cost=[TrainCard.YELLOW] + [TrainCard.LOCOMOTIVE for _ in range(2)],
-                city_dest=get_city_by_name(self.cities, "Warszawa"),
-            ),
-        )
 
         self.add_connection(
-            get_city_by_name(self.cities, "Krakow"),
             CityConnection(
-                cost=[TrainCard.GREY for _ in range(6)],
-                city_dest=get_city_by_name(self.cities, "Wroclaw"),
-            ),
+                [TrainCard.GREEN for _ in range(2)],
+                {
+                    get_city_by_name(self.cities, "Warszawa"),
+                    get_city_by_name(self.cities, "Krakow"),
+                },
+            )
         )
+
 
 def get_city_by_name(cities, name):
     for city in cities:
