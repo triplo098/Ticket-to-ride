@@ -1,0 +1,16 @@
+# Definition of connections in map, city1, city2 and cost of connection
+connections:
+  - cities: [Paris, Brest]
+    cost: [black, black, black]
+
+  - cities: [Brest, Paloma]
+    cost: [pink, pink, pink, pink]
+
+  - cities: [Paris, Paloma]
+    cost: [green, green, green, green]
+
+  - cities: [Paris, Paloma]
+    cost: [blue, blue, blue, blue]
+
+  - cities: [Paris, Dieppe]
+    cost: [pink]

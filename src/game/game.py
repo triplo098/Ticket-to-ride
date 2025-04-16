@@ -33,16 +33,18 @@ class Game:
 
 def main():
 
-    map = Map(cities=[City("Warszawa"), City("Wroclaw"), City("Krakow")])
+    # map = Map(cities=[City("Warszawa"), City("Wroclaw"), City("Krakow")])
     train_cards_deck = TrainCardsDeck()
     destination_tickets_deck = DestinationTicketsDeck()
     
     players = []
     
-
-    map.add_example_connections()
+    # map.add_example_connections()
+    map = Map(cities=[])
+    map.init_cities_from_yaml("../config/europe_map.yaml")
 
     print(map)
+    
     print(train_cards_deck)
 
     for i in range(2):
@@ -68,9 +70,6 @@ def main():
     print(game)
 
 
-    list(get_city_by_name(map.cities, "Warszawa").connections)[0].cost = [TrainCard.BLACK for _ in range(8)]
-    print("\nUpdated connection cost:")
-    print(game)
 
 if __name__ == "__main__":
     main()
