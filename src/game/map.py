@@ -42,54 +42,20 @@ class CityConnection:
 
 class Map:
 
-    def __init__(self, cities: list[City]):
+    def __init__(self, cities: list[City] = [], config_file: str = "../config/europe_map.yaml"):
+        
         self.cities = cities
 
-    def add_connection(self, city_connection: CityConnection):
-        """
-        Adds a connection between two cities. Setting connection info for both cities.
-        """
+        if not cities:
+            self.init_cities_from_config(config_file)
+
+    
 
     def __str__(self):
         return "Map: [\n" + " ".join(str(city) for city in self.cities) + "]"
 
-    def add_example_connections(self):
-        """
-        Adds example connections to the map.
-        """
-
-        self.add_connection(
-            CityConnection(
-                [TrainCard.PINK for _ in range(4)],
-                {
-                    get_city_by_name(self.cities, "Warszawa"),
-                    get_city_by_name(self.cities, "Wroclaw"),
-                },
-            )
-        )
-
-        self.add_connection(
-            CityConnection(
-                [TrainCard.YELLOW for _ in range(3)],
-                {
-                    get_city_by_name(self.cities, "Wroclaw"),
-                    get_city_by_name(self.cities, "Krakow"),
-                },
-            )
-        )
-
-
-        self.add_connection(
-            CityConnection(
-                [TrainCard.GREEN for _ in range(2)],
-                {
-                    get_city_by_name(self.cities, "Warszawa"),
-                    get_city_by_name(self.cities, "Krakow"),
-                },
-            )
-        )
-
-    def init_cities_from_yaml(self, cities_yaml_file: str):
+    
+    def init_cities_from_config(self, cities_yaml_file: str):
         """
         Initializes cities and their connections from a YAML file.
         The YAML file should contain a 'connections' list with city pairs and costs.

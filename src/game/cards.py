@@ -1,5 +1,6 @@
 from enum import Enum
 from random import shuffle
+import yaml
 
 
 class TrainCard(Enum):
@@ -64,6 +65,7 @@ class Deck:
 
         self.cards.append(card)
 
+
 class TrainCardsDeck(Deck):
     def __init__(self):
         self.cards = [
@@ -83,8 +85,34 @@ class TrainCardsDeck(Deck):
 
 
 class DestinationTicketsDeck(Deck):
-    def __init__(self):
-        self.cards = []
+    def __init__(
+        self,
+        cards: list[TrainCard] = [],
+        config_file: str = "../config/europe_map.yaml",
+    ):
+
+        self.cards = cards
+
+        if not cards:
+            self.init_deck_from_config(config_file)
+
+    def init_deck_from_config(self, config_file: str):
+        """
+        Initializes the deck from a config file.
+        """
+
+        with open(config_file, "r") as file:
+            data = yaml.safe_load(file)
+
+        for ticket_data in data["tickets"]:
+
+            city1_name, city2_name = ticket_data["cities"]
+            points = ticket_data["points"]
+
+            ticket = DestinationTicketCard(city1_name, city2_name, points)
+            self.cards.append(ticket)
+
+        self.shuffle()
 
     def __str__(self):
-        return f"DestinationTicketsDeck: [{', '.join(str(card) for card in self.cards)}]"
+        return f"DestinationTicketsDeck: [\n{'\n'.join(str(card) for card in self.cards)}\n]"
