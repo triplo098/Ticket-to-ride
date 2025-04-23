@@ -5,10 +5,11 @@ import os
 
 class City:
 
-    def __init__(self, name: str):
+    def __init__(self, name: str, point: tuple[int, int] = (0, 0)):
 
         self.name = name
         self.connections = []
+        self.point = point  # Coordinates of the city on the map
 
     def __str__(self):
 
@@ -17,7 +18,7 @@ class City:
         for connection in self.connections:
             connections_str += f"  {connection}\n"
 
-        return f"City: {self.name}\t \nConnections:\n{connections_str}"
+        return f"City: {self.name}\t \nCoordinates: {self.point}  \nConnections:\n{connections_str}\n"
 
 
 class CityConnection:
@@ -69,12 +70,9 @@ class Map:
         with open(cities_yaml_file, "r") as file:
             data = yaml.safe_load(file)
 
-        unique_cities = set()
-        for connection_data in data["connections"]:
-            unique_cities.update(connection_data["cities"])
-
-        for city_name in unique_cities:
-            city = City(city_name)
+        for city in data["cities"]:
+            
+            city = City(city["name"], (city["x"], city["y"]))
             self.cities.append(city)
 
         for connection_data in data["connections"]:

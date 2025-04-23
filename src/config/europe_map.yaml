@@ -25,3 +25,20 @@ tickets:
 
   - cities: [Paris, Paloma]
     points: 7 
+
+cities:
+  - name: Paris
+    x: 100
+    y: 200
+
+  - name: Brest
+    x: 300
+    y: 400
+
+  - name: Paloma
+    x: 500
+    y: 500
+
+  - name: Dieppe
+    x: 400
+    y: 500

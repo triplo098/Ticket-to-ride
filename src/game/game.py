@@ -8,7 +8,7 @@ from cards import (
     OpenCardsDeck,
 )
 from player import Player
-
+from gui import GUI
 
 class Game:
     """
@@ -168,6 +168,8 @@ class Game:
                 self.draw_destination_tickets(player)
                 pass
 
+            # TODO: Implement claim route
+
         self.turn_number += 1
         self.current_player_index = (self.current_player_index + 1) % len(self.players)
 
@@ -209,7 +211,6 @@ def main():
         current_player_index=0,
     )
 
-    
     # for player in players:
     #     print(player)
     # print(destination_tickets_deck)
@@ -217,6 +218,11 @@ def main():
 
     print("\nGame created successfully!")
     print(game)
+
+    # Initialize GUI
+    gui = GUI(game)
+
+    gui.run()
 
     game.play_game()
 
