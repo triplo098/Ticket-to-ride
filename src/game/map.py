@@ -1,5 +1,6 @@
 from cards import TrainCard
 import yaml
+import os
 
 
 class City:
@@ -24,11 +25,13 @@ class CityConnection:
     def __init__(self, cost: list[TrainCard], connected_cities: {City}):
 
         self.cost = cost  # List of train cards needed to create a connection
-        self.cities = connected_cities  # Set of connected cities; number of cities should be 2
+        self.cities = (
+            connected_cities  # Set of connected cities; number of cities should be 2
+        )
 
         if len(connected_cities) != 2:
             raise ValueError("CityConnection should connect exactly two cities")
-        
+
         connected_cities = list(connected_cities)
         connected_cities[0].connections.append(self)
         connected_cities[1].connections.append(self)
@@ -41,20 +44,22 @@ class CityConnection:
 
 
 class Map:
+    def __init__(
+        self,
+        cities: list[City] = [],
+        config_file: str = os.path.join(
+            os.path.dirname(__file__), "../config/europe_map.yaml"
+        ),
+    ):
 
-    def __init__(self, cities: list[City] = [], config_file: str = "../config/europe_map.yaml"):
-        
         self.cities = cities
 
         if not cities:
             self.init_cities_from_config(config_file)
 
-    
-
     def __str__(self):
         return "Map: [\n" + " ".join(str(city) for city in self.cities) + "]"
 
-    
     def init_cities_from_config(self, cities_yaml_file: str):
         """
         Initializes cities and their connections from a YAML file.
@@ -67,7 +72,7 @@ class Map:
         unique_cities = set()
         for connection_data in data["connections"]:
             unique_cities.update(connection_data["cities"])
-        
+
         for city_name in unique_cities:
             city = City(city_name)
             self.cities.append(city)
@@ -79,24 +84,24 @@ class Map:
                     cost.append(TrainCard[card_color.upper()])
                 except KeyError:
                     print(f"Warning: Unknown card color '{card_color}', skipping")
-            
+
             # Get the city objects for this connection
             city1_name, city2_name = connection_data["cities"]
             city1 = get_city_by_name(self.cities, city1_name)
             city2 = get_city_by_name(self.cities, city2_name)
-
 
             if city1 and city2:
                 # Create the connection between these two cities
                 connected_cities = {city1, city2}
                 CityConnection(cost, connected_cities)
             else:
-                print(f"Warning: Could not find cities: {', '.join(city1_name, city2_name)}")
+                print(
+                    f"Warning: Could not find cities: {', '.join(city1_name, city2_name)}"
+                )
+
 
 def get_city_by_name(cities, name):
     for city in cities:
         if city.name == name:
             return city
     raise ValueError(f"City with name {name} not found")
-
-

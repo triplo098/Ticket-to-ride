@@ -1,6 +1,7 @@
 from enum import Enum
 from random import shuffle
 import yaml
+import os
 
 
 class TrainCard(Enum):
@@ -65,6 +66,13 @@ class Deck:
 
         self.cards.append(card)
 
+    def add_card_to_bottom(self, card: TrainCard):
+        """
+        Adds a card to the bottom of the deck.
+        """
+
+        self.cards.insert(0, card)
+
 
 class TrainCardsDeck(Deck):
     def __init__(self):
@@ -88,7 +96,9 @@ class DestinationTicketsDeck(Deck):
     def __init__(
         self,
         cards: list[TrainCard] = [],
-        config_file: str = "../config/europe_map.yaml",
+        config_file: str = os.path.join(
+            os.path.dirname(__file__), "../config/europe_map.yaml"
+        ),
     ):
 
         self.cards = cards
@@ -116,3 +126,36 @@ class DestinationTicketsDeck(Deck):
 
     def __str__(self):
         return f"DestinationTicketsDeck: [\n{'\n'.join(str(card) for card in self.cards)}\n]"
+
+
+class OpenCardsDeck(Deck):
+    def __init__(self, train_cards_deck: TrainCardsDeck = None):
+        self.cards = []
+        self.train_cards_deck = train_cards_deck
+        self.draw_initial_cards()
+
+    def __str__(self):
+        return f"OpenCardsDeck: [ {' '.join(str(card) for card in self.cards)}]"
+
+    def draw_card(self, index: int):
+        """
+        Draws a card from the open cards deck at the specified index.
+        """
+
+        if index < 0 or index >= len(self.cards):
+            raise IndexError("Index out of range")
+
+        return self.cards.pop(index)
+
+    def draw_initial_cards(self):
+        """
+        Draws 5 initial cards from the train cards deck.
+        """
+
+        if self.train_cards_deck is None:
+            raise ValueError("train_cards_deck must be provided")
+
+        for _ in range(5):
+            card = self.train_cards_deck.draw_card()
+            if card:
+                self.cards.append(card)
