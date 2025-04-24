@@ -10,6 +10,7 @@ from cards import (
 from player import Player
 from gui import GUI
 
+
 class Game:
     """
     Handles game logic.
@@ -69,6 +70,7 @@ class Game:
         Prints the final scores of all players.
         """
         print("\nFinal Scores:")
+
         for player in self.players:
             print(f"{player.name}: {player.score} points")
 
@@ -79,15 +81,15 @@ class Game:
         while drew_cards < 2:
             print(f"{self.open_cards_deck}")
 
-            choice = input(
-                "Choose an action:\n 1. From the deck\n 2. From the open cards\n"
+            choice = int(
+                input("Choose an action:\n 1. From the deck\n 2. From the open cards\n")
             )
             match choice:
 
-                case "1":
+                case 1:
                     player.train_cards.append(self.train_cards_deck.draw_card())
                     drew_cards += 1
-                case "2":
+                case 2:
                     index = int(
                         input("Choose an index of the open card to draw (0-4): ")
                     )
@@ -145,6 +147,90 @@ class Game:
                 else:
                     self.destination_tickets_deck.add_card_to_bottom(ticket)
 
+    def choose_conn(self, player: Player):
+        """
+        Allows the player to choose a city connection.
+        """
+        print("Available cities:")
+        for i, city in enumerate(self.map.cities):
+            print(f"{i}. {city.name}")
+
+        city1_index = int(input("Choose the first city (index): "))
+        city2_index = int(input("Choose the second city (index): "))
+
+        # Error handling for invalid indices
+        if city1_index < 0 or city1_index >= len(self.map.cities):
+            print("Invalid index for the first city.")
+            return None
+        
+        if city2_index < 0 or city2_index >= len(self.map.cities):
+            print("Invalid index for the second city.")
+            return None
+        
+        if city1 == city2:
+            print("You cannot choose the same city twice.")
+            return None
+        
+
+        city1 = self.map.cities[city1_index]
+        city2 = self.map.cities[city2_index]
+
+        city_conn = city1.get_connection_from_cities(city2)
+
+        if city_conn is None:
+            print("No connection exists between the chosen cities.")
+            return None
+        
+        else:
+            print(f"Chosen connection: {city_conn}")
+            return city_conn
+        
+        
+    def claim_conn(self, player: Player, city_conn: CityConnection):
+        """
+        Claims a city connection for the player. 
+        Returns True if successful, False otherwise - route taken or player has to few cards.
+        """
+        
+        if city_conn.owner is not None:
+            print("This route is already claimed by another player.")
+            return False
+
+        conn_cost = Counter(city_conn.cost)
+        player_trains = Counter(player.train_cards)
+        
+        # TODO: Check if player has enough cards to claim the connection
+        
+        for card in city_conn.cost:
+            player_trains[card] -= 1
+
+        if player_trains[TrainCard.LOCOMOTIVE] < 0:
+            print("You don't have enough cards to claim this connection.")
+            return False
+        
+        if all(count >= 0 for count in player_trains.values()):
+            print("You have enough cards to claim this connection.")
+            
+            
+        else:
+            print("You don't have enough cards to claim this connection.")
+            return False
+
+        for card, count in conn_cost.items():
+            if player_trains[card] + player_trains[TrainCard.LOCOMOTIVE] >= count:
+                player_trains[card] -= count
+                player_trains[TrainCard.LOCOMOTIVE] -= count
+                                
+
+        player.trains -= len(city_conn.cost)
+        player.score += city_conn.points
+        city_conn.owner = player
+
+        print(f"{player.name} claimed the connection between {city_conn.cities[0].name} and {city_conn.cities[1].name}!")
+        return True
+    
+        
+
     def play_turn(self):
         """
         Plays a turn for the current player.
@@ -154,21 +240,33 @@ class Game:
         print(f"\n{player.name}'s turn:")
         print(f"Player: {player}")
 
-        choice = input(
-            "Choose an action:\n 1. Draw train cards\n 2. Draw destination tickets\n 3. Claim a route\n"
-        )
+        move_made = False
 
-        match choice:
-            case "1":
+        while not move_made:
 
-                self.draw_card(player)
+            choice = int(
+                input(
+                    "Choose an action:\n 1. Draw train cards\n 2. Draw destination tickets\n 3. Claim a city connection\n"
+                )
+            )
 
-            case "2":
+            match choice:
+                case 1:
 
-                self.draw_destination_tickets(player)
-                pass
+                    self.draw_card(player)
+                    move_made = True
+                case 2:
+                    self.draw_destination_tickets(player)
+                    move_made = True
+                case 3:
 
-            # TODO: Implement claim route
+                    conn = self.choose_conn(player)
+
+                    if self.claim_conn(player, conn):
+                        move_made = True
+
+                case _:
+                    print("Invalid choice. Please try again.")
 
         self.turn_number += 1
         self.current_player_index = (self.current_player_index + 1) % len(self.players)
@@ -210,11 +308,6 @@ def main():
         destination_tickets_deck=destination_tickets_deck,
         current_player_index=0,
     )
-
-    # for player in players:
-    #     print(player)
-    # print(destination_tickets_deck)
-    # print(map)
 
     print("\nGame created successfully!")
     print(game)

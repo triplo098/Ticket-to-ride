@@ -8,8 +8,31 @@ class City:
     def __init__(self, name: str, point: tuple[int, int] = (0, 0)):
 
         self.name = name
-        self.connections = []
+        self.connections = []  # List of connections to other cities
         self.point = point  # Coordinates of the city on the map
+
+    def get_connected_cities(self):
+        """
+        Returns a list of cities connected to this city.
+        """
+        connected_cities = []
+
+        for connection in self.connections:
+            for city in connection.cities:
+                if city != self:
+                    connected_cities.append(city)
+
+        return connected_cities
+
+    def get_connection_from_cities(self, city2: "City"):
+        """
+        Returns the connection between this city and another city.
+        """
+
+        for connection in self.connections:
+            if city2 in connection.cities:
+                return connection
+        return None
 
     def __str__(self):
 
@@ -29,6 +52,7 @@ class CityConnection:
         self.cities = (
             connected_cities  # Set of connected cities; number of cities should be 2
         )
+        self.owner = None  # Player who owns this connection
 
         if len(connected_cities) != 2:
             raise ValueError("CityConnection should connect exactly two cities")
@@ -71,7 +95,7 @@ class Map:
             data = yaml.safe_load(file)
 
         for city in data["cities"]:
-            
+
             city = City(city["name"], (city["x"], city["y"]))
             self.cities.append(city)
 
