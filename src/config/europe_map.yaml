@@ -13,7 +13,7 @@ connections:
   - cities: [Paris, Paloma]
     cost: [blue, blue, blue, blue]
 
-  - cities: [Paris, Dieppe]
+  - cities: [Paris, Bordeaux]
     cost: [pink]
 
 tickets:
@@ -27,18 +27,450 @@ tickets:
     points: 7 
 
 cities:
-  - name: Paris
-    x: 100
-    y: 200
-
+  - name: Aarhus
+    x: 1070
+    y: 346
+  - name: Alicante
+    x: 426
+    y: 748
+  - name: Almeria
+    x: 340
+    y: 776
+  - name: Amsterdam
+    x: 770
+    y: 463
+  - name: Andorra
+    x: 547
+    y: 633
+  - name: Antwerp
+    x: 754
+    y: 447
+  - name: Athens
+    x: 1274
+    y: 778
+  - name: BanjaLuka
+    x: 1097
+    y: 646
+  - name: Barcelona
+    x: 422
+    y: 683
+  - name: Bari
+    x: 1047
+    y: 660
+  - name: Basel
+    x: 803
+    y: 526
+  - name: Belgrade
+    x: 1217
+    y: 626
+  - name: Bergen
+    x: 981
+    y: 245
+  - name: Berlin
+    x: 1000
+    y: 463
+  - name: Bern
+    x: 748
+    y: 526
+  - name: Bilbao
+    x: 404
+    y: 654
+  - name: Bitola
+    x: 1184
+    y: 684
+  - name: Bologna
+    x: 931
+    y: 605
+  - name: Bordeaux
+    x: 518
+    y: 586
+  - name: Brescia
+    x: 884
+    y: 576
   - name: Brest
-    x: 300
-    y: 400
-
+    x: 470
+    y: 467
+  - name: Bratislava
+    x: 1074
+    y: 553
+  - name: Brno
+    x: 1061
+    y: 515
+  - name: Bruges
+    x: 722
+    y: 444
+  - name: Brussels
+    x: 739
+    y: 461
+  - name: Bucharest
+    x: 1337
+    y: 576
+  - name: Budapest
+    x: 1170
+    y: 583
+  - name: Burgas
+    x: 1382
+    y: 642
+  - name: Cagliari
+    x: 865
+    y: 734
+  - name: Catania
+    x: 1051
+    y: 758
+  - name: Chania
+    x: 1163
+    y: 809
+  - name: Cluj
+    x: 1272
+    y: 534
+  - name: Cologne
+    x: 803
+    y: 505
+  - name: Constanta
+    x: 1414
+    y: 589
+  - name: Copenhagen
+    x: 999
+    y: 366
+  - name: Cork
+    x: 366
+    y: 416
+  - name: Daugavpils
+    x: 1356
+    y: 378
+  - name: Debrecen
+    x: 1224
+    y: 551
+  - name: Dortmund
+    x: 832
+    y: 493
+  - name: Dresden
+    x: 1043
+    y: 490
+  - name: Drobeta
+    x: 1301
+    y: 562
+  - name: Dublin
+    x: 402
+    y: 410
+  - name: Elbasan
+    x: 1221
+    y: 715
+  - name: Faro
+    x: 167
+    y: 782
+  - name: Florence
+    x: 960
+    y: 628
+  - name: Frankfurt
+    x: 870
+    y: 528
+  - name: Funchal
+    x: 84
+    y: 784
+  - name: Galway
+    x: 338
+    y: 397
+  - name: Gdansk
+    x: 1100
+    y: 433
+  - name: Geneva
+    x: 718
+    y: 528
+  - name: Genoa
+    x: 884
+    y: 595
+  - name: Gent
+    x: 729
+    y: 456
+  - name: Giurgiu
+    x: 1343
+    y: 604
+  - name: Graz
+    x: 1042
+    y: 576
+  - name: Hamburg
+    x: 974
+    y: 394
+  - name: Heraklion
+    x: 1222
+    y: 826
+  - name: Helsinki
+    x: 1235
+    y: 268
+  - name: Innsbruck
+    x: 910
+    y: 548
+  - name: Istanbul
+    x: 1511
+    y: 723
+  - name: Kaunas
+    x: 1273
+    y: 392
+  - name: Kavala
+    x: 1323
+    y: 734
+  - name: Kecskemet
+    x: 1189
+    y: 571
+  - name: Klaipeda
+    x: 1250
+    y: 370
+  - name: Kotor
+    x: 1120
+    y: 671
+  - name: Krakow
+    x: 1226
+    y: 530
+  - name: LaCoruna
+    x: 292
+    y: 633
+  - name: Leipzig
+    x: 1000
+    y: 466
+  - name: Liege
+    x: 769
+    y: 474
+  - name: Lisbon
+    x: 211
+    y: 724
+  - name: Ljubljana
+    x: 1018
+    y: 585
+  - name: Linz
+    x: 994
+    y: 543
+  - name: Livorno
+    x: 914
+    y: 612
+  - name: Lodz
+    x: 1166
+    y: 441
+  - name: Lugano
+    x: 839
+    y: 539
+  - name: Luxembourg
+    x: 748
+    y: 476
+  - name: Lviv
+    x: 1300
+    y: 492
+  - name: Lyon
+    x: 670
+    y: 544
+  - name: Madrid
+    x: 348
+    y: 697
+  - name: Malaga
+    x: 281
+    y: 747
+  - name: Malmo
+    x: 1041
+    y: 345
+  - name: Maribor
+    x: 1024
+    y: 576
+  - name: Marseille
+    x: 733
+    y: 589
+  - name: Metz
+    x: 761
+    y: 492
+  - name: Milan
+    x: 871
+    y: 557
+  - name: Minsk
+    x: 1408
+    y: 421
+  - name: Modena
+    x: 914
+    y: 607
+  - name: Monaco
+    x: 886
+    y: 590
+  - name: Moscow
+    x: 1600
+    y: 329
+  - name: Munich
+    x: 954
+    y: 536
+  - name: Naples
+    x: 1024
+    y: 695
+  - name: Nantes
+    x: 526
+    y: 532
+  - name: Nice
+    x: 801
+    y: 600
+  - name: Nicosia
+    x: 1410
+    y: 850
+  - name: NoviSad
+    x: 1178
+    y: 602
+  - name: Nuremberg
+    x: 947
+    y: 511
+  - name: Oradea
+    x: 1246
+    y: 544
+  - name: Oslo
+    x: 1018
+    y: 280
+  - name: Oradea
+    x: 1246
+    y: 544
+  - name: Oslo
+    x: 1018
+    y: 280
   - name: Paloma
-    x: 500
-    y: 500
-
-  - name: Dieppe
-    x: 400
-    y: 500
+    x: 414
+    y: 644
+  - name: Paris
+    x: 611
+    y: 493
+  - name: Patras
+    x: 1200
+    y: 734
+  - name: Perugia
+    x: 954
+    y: 628
+  - name: Petersburg
+    x: 1462
+    y: 277
+  - name: Pisa
+    x: 904
+    y: 621
+  - name: Plovdiv
+    x: 1284
+    y: 660
+  - name: Podgorica
+    x: 1136
+    y: 654
+  - name: Poděbrady
+    x: 1024
+    y: 492
+  - name: Porto
+    x: 255
+    y: 682
+  - name: Poznan
+    x: 1089
+    y: 456
+  - name: Prague
+    x: 1014
+    y: 497
+  - name: Reims
+    x: 700
+    y: 478
+  - name: Reykjavik
+    x: 314
+    y: 89
+  - name: Riga
+    x: 1317
+    y: 352
+  - name: Rijeka
+    x: 1026
+    y: 589
+  - name: Rome
+    x: 951
+    y: 622
+  - name: Rotterdam
+    x: 780
+    y: 445
+  - name: Ruse
+    x: 1347
+    y: 611
+  - name: Sassari
+    x: 818
+    y: 709
+  - name: Sarajevo
+    x: 1139
+    y: 676
+  - name: Seville
+    x: 297
+    y: 732
+  - name: Shumen
+    x: 1358
+    y: 626
+  - name: Skopje
+    x: 1195
+    y: 665
+  - name: Sliven
+    x: 1358
+    y: 640
+  - name: Sofia
+    x: 1274
+    y: 636
+  - name: Split
+    x: 1062
+    y: 652
+  - name: Stuttgart
+    x: 869
+    y: 515
+  - name: Szeged
+    x: 1218
+    y: 586
+  - name: Tallinn
+    x: 1304
+    y: 301
+  - name: Tartu
+    x: 1300
+    y: 281
+  - name: Thessaloniki
+    x: 1293
+    y: 724
+  - name: Timisoara
+    x: 1236
+    y: 561
+  - name: Torino
+    x: 823
+    y: 563
+  - name: Toulouse
+    x: 547
+    y: 610
+  - name: Trento
+    x: 898
+    y: 566
+  - name: Trieste
+    x: 987
+    y: 582
+  - name: Tirana
+    x: 1189
+    y: 711
+  - name: Turin
+    x: 824
+    y: 555
+  - name: Uzhhorod
+    x: 1195
+    y: 531
+  - name: Valencia
+    x: 398
+    y: 759
+  - name: Varna
+    x: 1429
+    y: 632
+  - name: Venice
+    x: 927
+    y: 589
+  - name: Vienna
+    x: 1030
+    y: 541
+  - name: Vigo
+    x: 256
+    y: 657
+  - name: Vilnius
+    x: 1301
+    y: 410
+  - name: Warsaw
+    x: 1225
+    y: 471
+  - name: Zagreb
+    x: 1081
+    y: 589
+  - name: Zaragoza
+    x: 441
+    y: 643
+  - name: Zilina
+    x: 1090
+    y: 528

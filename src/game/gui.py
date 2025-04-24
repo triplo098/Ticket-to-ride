@@ -4,7 +4,7 @@ import pygame
 class GUI:
     def __init__(self, game):
         self.game = game
-        self.screen = pygame.display.set_mode((800, 600))
+        self.screen = pygame.display.set_mode((1600, 900))
         pygame.display.set_caption("Ticket to Ride")
         pygame.font.init()  # Initialize the font module
         self.clock = pygame.time.Clock()
