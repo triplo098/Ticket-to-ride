@@ -1,19 +1,24 @@
 import pygame
-
+import os
 
 class GUI:
     def __init__(self, game):
         self.game = game
-        self.screen = pygame.display.set_mode((1600, 900))
+        self.screen = pygame.display.set_mode((1024, 1024))
         pygame.display.set_caption("Ticket to Ride")
         pygame.font.init()  # Initialize the font module
         self.clock = pygame.time.Clock()
         
 
     def draw(self):
-        # Clear the screen
-        self.screen.fill((255, 255, 255))
-        
+        # Load the background image
+        script_dir = os.path.dirname(os.path.abspath(__file__))  # Get the directory of the current script
+        map_path = os.path.join(script_dir, '../config/maps/Europe_Political_Map.png')
+        background_image = pygame.image.load(map_path)
+
+        # Draw the background image on the screen
+        self.screen.blit(background_image, (0, 0))  # Draw at the top-left corner of the screen (0, 0)
+
         for city in self.game.map.cities:
             # Draw each city
             pygame.draw.circle(self.screen, (0, 0, 0), city.point, 5)
