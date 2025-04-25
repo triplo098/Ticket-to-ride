@@ -33,7 +33,7 @@ class City:
             if city2 in connection.cities:
                 return connection
         return None
-
+    
     def __str__(self):
 
         connections_str = ""
@@ -60,7 +60,33 @@ class CityConnection:
         connected_cities = list(connected_cities)
         connected_cities[0].connections.append(self)
         connected_cities[1].connections.append(self)
+    def get_score_for_claiming(self):
+        """
+        Returns the score for claiming this connection.
+        The score is based on the length of the connection.
+        """
 
+        conn_len = len(self.cost)
+        out_score = None
+
+        match conn_len:
+            case 1:
+                out_score = 1
+            case 2:
+                out_score = 2
+            case 3:
+                out_score = 4
+            case 4:
+                out_score = 7
+            case 5:
+                out_score = 10
+            case 6:
+                out_score = 15
+            case _:
+                out_score = 0
+        
+        return out_score
+        
     def __str__(self):
 
         cities = list(self.cities)

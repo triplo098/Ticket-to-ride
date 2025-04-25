@@ -162,15 +162,14 @@ class Game:
         if city1_index < 0 or city1_index >= len(self.map.cities):
             print("Invalid index for the first city.")
             return None
-        
+
         if city2_index < 0 or city2_index >= len(self.map.cities):
             print("Invalid index for the second city.")
             return None
-        
-        if city1 == city2:
+
+        if city1_index == city2_index:
             print("You cannot choose the same city twice.")
             return None
-        
 
         city1 = self.map.cities[city1_index]
         city2 = self.map.cities[city2_index]
@@ -180,56 +179,75 @@ class Game:
         if city_conn is None:
             print("No connection exists between the chosen cities.")
             return None
-        
+
         else:
             print(f"Chosen connection: {city_conn}")
             return city_conn
-        
-        
+
     def claim_conn(self, player: Player, city_conn: CityConnection):
         """
-        Claims a city connection for the player. 
+        Claims a city connection for the player.
         Returns True if successful, False otherwise - route taken or player has to few cards.
         """
-        
+
         if city_conn.owner is not None:
             print("This route is already claimed by another player.")
             return False
 
         conn_cost = Counter(city_conn.cost)
         player_trains = Counter(player.train_cards)
-        
-        # TODO: Check if player has enough cards to claim the connection
-        
-        for card in city_conn.cost:
-            player_trains[card] -= 1
 
-        if player_trains[TrainCard.LOCOMOTIVE] < 0:
-            print("You don't have enough cards to claim this connection.")
-            return False
-        
-        if all(count >= 0 for count in player_trains.values()):
-            print("You have enough cards to claim this connection.")
-            
-            
-        else:
-            print("You don't have enough cards to claim this connection.")
+        # Using Locomotive cards
+        if conn_cost[TrainCard.LOCOMOTIVE] > player_trains[TrainCard.LOCOMOTIVE]:
+            print(f"No enough Locomotive cards to claim this connection.")
             return False
 
+        # Checking all other cards
         for card, count in conn_cost.items():
-            if player_trains[card] + player_trains[TrainCard.LOCOMOTIVE] >= count:
-                player_trains[card] -= count
-                player_trains[TrainCard.LOCOMOTIVE] -= count
-                                
 
+            if player_trains[card] >= count:  # Paying with base card (non-locomotive for all others colors)
+                player_trains[card] -= count
+                continue
+
+            elif (
+                player_trains[TrainCard.LOCOMOTIVE] + player_trains[card] >= count
+                and card != TrainCard.LOCOMOTIVE
+            ):  # Paying with locomotive cards
+
+                non_locomotive_count = player_trains[card]
+                locomotive_count = count - non_locomotive_count
+
+                player_trains[card] -= non_locomotive_count
+                player_trains[TrainCard.LOCOMOTIVE] -= locomotive_count
+
+                continue
+            else:
+                print(
+                    f"You don't have enough {card.name} cards to claim this connection."
+                )
+                return False
+
+        player_trains_diff = Counter(player.train_cards)
+
+        #  Getting the count of how many trains should be use for claming connection
+        for card, count in player_trains_diff.items():
+            player_trains_diff[card] -= player_trains[card]
+
+        for card, count in player_trains_diff.items():
+
+            for _ in range(count):
+                if card in player.train_cards:
+                    player.train_cards.remove(card) # Spending cards
+                else:
+                    print(f"Card {card.name} not found in player's train cards.")
+
+        # Turn summary
         player.trains -= len(city_conn.cost)
-        player.score += city_conn.points
+        player.score += city_conn.get_score_for_claiming()
         city_conn.owner = player
 
-        print(f"{player.name} claimed the connection between {city_conn.cities[0].name} and {city_conn.cities[1].name}!")
+        print(f"{player.name} claimed the {city_conn}!")
         return True
-    
-        
 
     def play_turn(self):
         """
@@ -299,6 +317,11 @@ def main():
             train_cards=[train_cards_deck.draw_card() for i in range(5)],
         )
         players.append(player)
+
+    players[0].train_cards = []
+
+    players[0].train_cards.extend([TrainCard.BLACK] * 2)
+    players[0].train_cards.extend([TrainCard.LOCOMOTIVE] * 2)
 
     game = Game(
         players=players,
