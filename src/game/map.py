@@ -24,15 +24,19 @@ class City:
 
         return connected_cities
 
-    def get_connection_from_cities(self, city2: "City"):
+    def get_all_connections_between_cities(self, city2: "City"):
         """
-        Returns the connection between this city and another city.
+        Returns the list of connections between this city and another city.
         """
+
+        connections = []
 
         for connection in self.connections:
             if city2 in connection.cities:
-                return connection
-        return None
+                connections.append(connection)    
+
+        return connections
+    
     
     def __str__(self):
 

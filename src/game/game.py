@@ -119,13 +119,16 @@ class Game:
                     print("Invalid choice. Please try again.")
 
     def draw_destination_tickets(self, player: Player):
-
+        
+        '''
+        Drawing destination tickets from deck. At least one ticket needs to be taken.
+        '''
         temp_cards = []
         for _ in range(3):
             card = self.destination_tickets_deck.draw_card()
             if card is None:
                 print("No more destination tickets available.")
-                continue
+                return None
             else:
                 temp_cards.append(card)
 
@@ -138,19 +141,42 @@ class Game:
         if choice.lower() == "y":
             player.destination_tickets.extend(temp_cards[:])
         else:
-            for i, ticket in enumerate(temp_cards[:]):
-                print(f"{i}. {ticket}")
 
-                choice = input(f"Do you want to keep this ticket? (y/n): ")
-                if choice.lower() == "y":
-                    player.destination_tickets.append(ticket)
-                else:
-                    self.destination_tickets_deck.add_card_to_bottom(ticket)
+            taken_cards_counter = 0
+            tickets_for_taking = []
+
+            while taken_cards_counter <= 0:  
+                
+                print("Player need to take at lead one of cards")
+
+                taken_cards_counter = 0
+                tickets_for_taking = []
+
+                for i, ticket in enumerate(temp_cards[:]):
+                    print(f"{i}. {ticket}")
+
+                    choice = input(f"Do you want to keep this ticket? (y/n): ")
+                    if choice.lower() == "y":
+
+                        tickets_for_taking.append(ticket)
+                        taken_cards_counter += 1
+
+            player.destination_tickets.extend(tickets_for_taking)
+
+            tickets_for_returing = list(set(tickets_for_taking) - set(temp_cards))
+
+            self.destination_tickets_deck.add_card_to_bottom(
+                card for card in tickets_for_returing
+            )
+
+            return tickets_for_taking
+        
 
     def choose_conn(self, player: Player):
         """
-        Allows the player to choose a city connection.
+        Allows the player to choose a city conncection.
         """
+
         print("Available cities:")
         for i, city in enumerate(self.map.cities):
             print(f"{i}. {city.name}")
@@ -174,15 +200,33 @@ class Game:
         city1 = self.map.cities[city1_index]
         city2 = self.map.cities[city2_index]
 
-        city_conn = city1.get_connection_from_cities(city2)
+        cities_connections = city1.get_all_connections_between_cities(city2)
 
-        if city_conn is None:
+        city_conn = None
+
+        if len(cities_connections) == 0:
             print("No connection exists between the chosen cities.")
-            return None
 
-        else:
+        elif len(cities_connections) == 1:
+
+            city_conn = cities_connections[0]
+
             print(f"Chosen connection: {city_conn}")
-            return city_conn
+        else:
+            print("Available connections")
+
+            for i, conn in enumerate(cities_connections):
+                print(f"{i}. {conn}")
+
+            choice = -1
+
+            while choice >= len(cities_connections) or choice < 0:
+
+                choice = int(input("Choose index: "))
+
+            city_conn = cities_connections[choice]
+
+        return city_conn
 
     def claim_conn(self, player: Player, city_conn: CityConnection):
         """
@@ -205,7 +249,9 @@ class Game:
         # Checking all other cards
         for card, count in conn_cost.items():
 
-            if player_trains[card] >= count:  # Paying with base card (non-locomotive for all others colors)
+            if (
+                player_trains[card] >= count
+            ):  # Paying with base card (non-locomotive for all others colors)
                 player_trains[card] -= count
                 continue
 
@@ -237,7 +283,7 @@ class Game:
 
             for _ in range(count):
                 if card in player.train_cards:
-                    player.train_cards.remove(card) # Spending cards
+                    player.train_cards.remove(card)  # Spending cards
                 else:
                     print(f"Card {card.name} not found in player's train cards.")
 
@@ -274,13 +320,15 @@ class Game:
                     self.draw_card(player)
                     move_made = True
                 case 2:
-                    self.draw_destination_tickets(player)
-                    move_made = True
+
+                    if self.draw_destination_tickets(player) != None:
+                        move_made = True
+
                 case 3:
 
                     conn = self.choose_conn(player)
 
-                    if self.claim_conn(player, conn):
+                    if conn != None and self.claim_conn(player, conn):
                         move_made = True
 
                 case _:

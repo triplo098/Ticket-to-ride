@@ -4,6 +4,9 @@ connections:
   - cities: [Paris, Brest]
     cost: [black, black, black, locomotive]
 
+  - cities: [Paris, Brest]
+    cost: [blue, blue, blue]
+
   - cities: [Brest, Paloma]
     cost: [pink, pink, pink, pink]
 
@@ -20,6 +23,7 @@ tickets:
   - cities: [Paris, Brest]
     points: 5
   
+
   - cities: [Brest, Paloma]
     points: 8
 
