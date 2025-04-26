@@ -4,7 +4,7 @@ import os
 class GUI:
     def __init__(self, game):
         self.game = game
-        self.screen = pygame.display.set_mode((1024, 1024))
+        self.screen = pygame.display.set_mode((1050, 578))
         pygame.display.set_caption("Ticket to Ride")
         pygame.font.init()  # Initialize the font module
         self.clock = pygame.time.Clock()
@@ -13,7 +13,7 @@ class GUI:
     def draw(self):
         # Load the background image
         script_dir = os.path.dirname(os.path.abspath(__file__))  # Get the directory of the current script
-        map_path = os.path.join(script_dir, '../config/maps/Europe_Political_Map.png')
+        map_path = os.path.join(script_dir, '../config/set_europe_close_up/Europe_Map.jpg')
         background_image = pygame.image.load(map_path)
 
         # Draw the background image on the screen

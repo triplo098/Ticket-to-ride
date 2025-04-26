@@ -49,7 +49,7 @@ class Map:
         self,
         cities: list[City] = [],
         config_file: str = os.path.join(
-            os.path.dirname(__file__), "../config/europe_map.yaml"
+            os.path.dirname(__file__), "../config//set_europe_close_up/europe_map_close_up.yaml"
         ),
     ):
 

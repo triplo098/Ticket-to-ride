@@ -1,0 +1,44 @@
+# Definition of connections in map, city1, city2 and cost of connection
+# and definition of tickets with points
+connections:
+  - cities: [Paris, Brest]
+    cost: [black, black, black]
+
+  - cities: [Brest, Palermo]
+    cost: [pink, pink, pink, pink]
+
+  - cities: [Paris, Palermo]
+    cost: [green, green, green, green]
+
+  - cities: [Paris, Palermo]
+    cost: [blue, blue, blue, blue]
+
+  - cities: [Paris, Bordeaux]
+    cost: [pink]
+
+tickets:
+  - cities: [Paris, Brest]
+    points: 5
+  
+  - cities: [Brest, Palermo]
+    points: 8
+
+  - cities: [Paris, Palermo]
+    points: 7 
+
+cities:
+  - name: Bordeaux
+    x: 181
+    y: 365
+  - name: Brest
+    x: 111
+    y: 297
+  - name: Palermo
+    x: 392
+    y: 521
+  - name: Paris
+    x: 212
+    y: 292
+  - name: Warsaw
+    x: 563
+    y: 231
