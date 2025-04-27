@@ -38,7 +38,46 @@ cities:
     y: 521
   - name: Paris
     x: 212
-    y: 292
+    y: 308
   - name: Warsaw
-    x: 563
+    x: 549
     y: 231
+  - name: London
+    x: 184
+    y: 206
+  - name: Barcelona
+    x: 185
+    y: 500
+  - name: Madrid
+    x: 100
+    y: 490
+  - name: Vilnius 
+    x: 627
+    y: 219
+  - name: Danzig
+    x: 490
+    y: 140
+  - name: Berlin
+    x: 393
+    y: 220
+  - name: Essen
+    x: 323
+    y: 200
+  - name: Amsterdam
+    x: 257
+    y: 190
+  - name: Munich
+    x: 350
+    y: 282
+  - name: Frankfurt
+    x: 318
+    y: 240
+  - name: Pamplona
+    x: 158
+    y: 428
+  - name: Brussels
+    x: 246
+    y: 227
+  - name: Marseille
+    x: 292
+    y: 412
