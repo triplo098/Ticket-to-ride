@@ -18,12 +18,12 @@ class Game:
 
     def __init__(
         self,
-        players: list[Player],
         map: Map,
         train_cards_deck: TrainCardsDeck,
         destination_tickets_deck: DestinationTicketsDeck,
         open_cards_deck: OpenCardsDeck,
         current_player_index: int,
+        players: list[Player] = [],
     ):
         self.players = players
         self.map = map
@@ -47,6 +47,20 @@ class Game:
             f"Current Player: {self.players[self.current_player_index].name}\n"
             f"Game Over: {self.game_over}"
         )
+    
+    def setup_game(self):
+        """
+        Sets up the game by shuffling and dealing cards.
+        """
+        # Shuffle and deal train cards
+        self.train_cards_deck.shuffle()
+        
+        # Drawing initial train cards and destination tickets for each player
+        for player in self.players:
+            print(f"Drawing initial cards for {player.name}...")
+            player.train_cards = [self.train_cards_deck.draw_card() for _ in range(4)]
+            player.destination_tickets = self.draw_destination_tickets(player, 3, 2)
+
 
     def play_game(self):
         """
@@ -118,16 +132,18 @@ class Game:
                 case _:
                     print("Invalid choice. Please try again.")
 
-    def draw_destination_tickets(self, player: Player):
-        
-        '''
-        Drawing destination tickets from deck. At least one ticket needs to be taken.
-        '''
+    def draw_destination_tickets(
+        self, player: Player, num_tickets: int = 3, need_to_take: int = 1
+    ):
+        """
+        Drawing destination tickets from deck. 
+        At least 'need_to_take' ticket needs to be taken.
+        """
         temp_cards = []
-        for _ in range(3):
+        for _ in range(num_tickets):
             card = self.destination_tickets_deck.draw_card()
             if card is None:
-                print("No more destination tickets available.")
+                print("Not enough destination tickets available.")
                 return None
             else:
                 temp_cards.append(card)
@@ -145,9 +161,9 @@ class Game:
             taken_cards_counter = 0
             tickets_for_taking = []
 
-            while taken_cards_counter <= 0:  
-                
-                print("Player need to take at lead one of cards")
+            while taken_cards_counter < need_to_take:
+
+                print(f"Player need to take at least {need_to_take} cards")
 
                 taken_cards_counter = 0
                 tickets_for_taking = []
@@ -163,14 +179,12 @@ class Game:
 
             player.destination_tickets.extend(tickets_for_taking)
 
-            tickets_for_returing = list(set(tickets_for_taking) - set(temp_cards))
+            tickets_for_returing = list(set(temp_cards) - set(tickets_for_taking))
 
-            self.destination_tickets_deck.add_card_to_bottom(
-                card for card in tickets_for_returing
-            )
+            for card in tickets_for_returing:
+                self.destination_tickets_deck.add_card_to_bottom(card)
 
             return tickets_for_taking
-        
 
     def choose_conn(self, player: Player):
         """
@@ -352,41 +366,27 @@ class Game:
 def main():
 
     train_cards_deck = TrainCardsDeck()
-    destination_tickets_deck = DestinationTicketsDeck()
-
     open_cards_deck = OpenCardsDeck(train_cards_deck)
 
-    players = []
-    map = Map()
-
-    for i in range(2):
-        player = Player(
-            name=f"Player {i + 1}",
-            train_cards=[train_cards_deck.draw_card() for i in range(5)],
-        )
-        players.append(player)
-
-    players[0].train_cards = []
-
-    players[0].train_cards.extend([TrainCard.BLACK] * 2)
-    players[0].train_cards.extend([TrainCard.LOCOMOTIVE] * 2)
-
     game = Game(
-        players=players,
-        map=map,
-        train_cards_deck=train_cards_deck,
+        map=Map(),
+        train_cards_deck=TrainCardsDeck(),
         open_cards_deck=open_cards_deck,
-        destination_tickets_deck=destination_tickets_deck,
+        destination_tickets_deck=DestinationTicketsDeck(),
         current_player_index=0,
+        players=[Player(name=f"Player {i + 1}") for i in range(2)],
     )
+
+    # Setup game
+    game.setup_game()
 
     print("\nGame created successfully!")
     print(game)
 
     # Initialize GUI
-    gui = GUI(game)
+    # gui = GUI(game)
 
-    gui.run()
+    # gui.run()
 
     game.play_game()
 
