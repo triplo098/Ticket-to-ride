@@ -47,20 +47,19 @@ class Game:
             f"Current Player: {self.players[self.current_player_index].name}\n"
             f"Game Over: {self.game_over}"
         )
-    
+
     def setup_game(self):
         """
         Sets up the game by shuffling and dealing cards.
         """
         # Shuffle and deal train cards
         self.train_cards_deck.shuffle()
-        
+
         # Drawing initial train cards and destination tickets for each player
         for player in self.players:
             print(f"Drawing initial cards for {player.name}...")
             player.train_cards = [self.train_cards_deck.draw_card() for _ in range(4)]
-            player.destination_tickets = self.draw_destination_tickets(player, 3, 2)
-
+            self.draw_destination_tickets(player, 3, 2)
 
     def play_game(self):
         """
@@ -136,14 +135,14 @@ class Game:
         self, player: Player, num_tickets: int = 3, need_to_take: int = 1
     ):
         """
-        Drawing destination tickets from deck. 
+        Drawing destination tickets from deck.
         At least 'need_to_take' ticket needs to be taken.
         """
         temp_cards = []
         for _ in range(num_tickets):
             card = self.destination_tickets_deck.draw_card()
             if card is None:
-                print("Not enough destination tickets available.")
+                print("Not more destination tickets available.")
                 return None
             else:
                 temp_cards.append(card)
@@ -189,6 +188,7 @@ class Game:
     def choose_conn(self, player: Player):
         """
         Allows the player to choose a city conncection.
+        Returns the chosen connection between two cities.
         """
 
         print("Available cities:")
@@ -245,7 +245,7 @@ class Game:
     def claim_conn(self, player: Player, city_conn: CityConnection):
         """
         Claims a city connection for the player.
-        Returns True if successful, False otherwise - route taken or player has to few cards.
+        Returns True if successful, False otherwise - route is taken or player has to few cards.
         """
 
         if city_conn.owner is not None:
@@ -309,6 +309,28 @@ class Game:
         print(f"{player.name} claimed the {city_conn}!")
         return True
 
+    def check_for_accomplished_tickets(self, player: Player):
+        """
+        Check if the player accomplished any destination tickets.
+        Adds points to the player's score and moves the tickets to the accomplished list.
+        """
+        for ticket in player.destination_tickets:
+            if (
+                ticket.is_accomplished(player)
+                and ticket not in player.accomplished_destination_tickets
+            ):
+
+                player.accomplished_destination_tickets.append(ticket)
+                player.score += ticket.points
+                print(f"{player.name} accomplished a destination ticket: {ticket}")
+
+        # Remove accomplished tickets from the player's list
+        player.destination_tickets = [
+            ticket
+            for ticket in player.destination_tickets
+            if ticket not in player.accomplished_destination_tickets
+        ]
+
     def play_turn(self):
         """
         Plays a turn for the current player.
@@ -348,6 +370,8 @@ class Game:
                 case _:
                     print("Invalid choice. Please try again.")
 
+        self.check_for_accomplished_tickets(player)
+
         self.turn_number += 1
         self.current_player_index = (self.current_player_index + 1) % len(self.players)
 
@@ -379,6 +403,9 @@ def main():
 
     # Setup game
     game.setup_game()
+
+    for player in game.players:
+        print(player)
 
     print("\nGame created successfully!")
     print(game)

@@ -11,6 +11,15 @@ class Player:
         self.accomplished_destination_tickets = []
         self.score = 0
 
+    def get_city(self, city_name):
+        """
+        Returns the city object with the given name.
+        """
+        for card in self.train_cards:
+            if card.name == city_name:
+                return card
+        return None
+    
     def __str__(self):
         train_cards_str = ", ".join(card.name for card in self.train_cards)
         tickets_str = "\n  ".join(str(ticket) for ticket in self.destination_tickets)

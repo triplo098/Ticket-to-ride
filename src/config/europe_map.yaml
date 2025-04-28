@@ -30,6 +30,18 @@ tickets:
   - cities: [Paris, Paloma]
     points: 7 
 
+  - cities: [Paris, Bordeaux]
+    points: 4
+
+  - cities: [Brest, Bordeaux]
+    points: 6
+
+  - cities: [Paloma, Bordeaux]
+    points: 9
+
+  - cities: [Prague, Bordeaux]
+    points: 10
+
 cities:
   - name: Brest
     x: 300

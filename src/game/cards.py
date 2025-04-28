@@ -3,7 +3,6 @@ from random import shuffle
 import yaml
 import os
 
-
 class TrainCard(Enum):
     PINK = 1
     WHITE = 2
@@ -26,6 +25,36 @@ class DestinationTicketCard:
         self.end_city = end_city
 
         self.points = points
+
+    def is_accomplished(self, player: "Player"):
+        """
+        Checks if the destination ticket is accomplished for the given player.
+        """
+
+        from player import Player
+
+        start_city = player.get_city(self.start_city)
+        end_city = player.get_city(self.end_city)
+
+        if start_city == None or end_city == None:
+            return False
+
+
+        # Check if the cities are connected
+        def dfs(city, visited):
+            if city == end_city:
+                return True
+            
+            visited.add(city)
+            for neighbor in city.get_connected_cities():
+                if neighbor not in visited:
+                    if dfs(neighbor, visited):
+                        return True
+                return False
+
+        visited = set()
+        return dfs(start_city, visited)
+    
 
     def __str__(self):
         return (
