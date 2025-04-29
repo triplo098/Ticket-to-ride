@@ -30,7 +30,6 @@ class DestinationTicketCard:
         """
         Checks if the destination ticket is accomplished for the given player.
         """
-
         from player import Player
 
         start_city = player.get_city(self.start_city)
@@ -39,21 +38,24 @@ class DestinationTicketCard:
         if start_city == None or end_city == None:
             return False
 
-
         # Check if the cities are connected
         def dfs(city, visited):
+            print(f"DFS visiting city: {city.name}")
             if city == end_city:
                 return True
-            
+
             visited.add(city)
             for neighbor in city.get_connected_cities():
                 if neighbor not in visited:
                     if dfs(neighbor, visited):
                         return True
-                return False
+            
+            return False
 
         visited = set()
-        return dfs(start_city, visited)
+        result = dfs(start_city, visited)
+        print(f"Result of DFS: {'Accomplished' if result else 'Not accomplished'}")
+        return result
     
 
     def __str__(self):

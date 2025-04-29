@@ -305,6 +305,7 @@ class Game:
         player.trains -= len(city_conn.cost)
         player.score += city_conn.get_score_for_claiming()
         city_conn.owner = player
+        player.cities_connections.append(city_conn)
 
         print(f"{player.name} claimed the {city_conn}!")
         return True
@@ -367,10 +368,11 @@ class Game:
                     if conn != None and self.claim_conn(player, conn):
                         move_made = True
 
+                    self.check_for_accomplished_tickets(player)
+                   
                 case _:
                     print("Invalid choice. Please try again.")
 
-        self.check_for_accomplished_tickets(player)
 
         self.turn_number += 1
         self.current_player_index = (self.current_player_index + 1) % len(self.players)
@@ -407,13 +409,27 @@ def main():
     for player in game.players:
         print(player)
 
+    game.players[0].train_cards.extend(
+        [TrainCard.BLUE, TrainCard.BLACK] * 5
+        + [TrainCard.LOCOMOTIVE] * 2
+        + [TrainCard.GREEN] * 4
+        + [TrainCard.PINK] * 4
+    )
+
     print("\nGame created successfully!")
     print(game)
 
     # Initialize GUI
     # gui = GUI(game)
+    # # gui.run()
 
-    # gui.run()
+    # while True:
+
+    #     player = game.players[0]
+    #     print(player)
+    #     conn = game.choose_conn(player)
+    #     game.claim_conn(player, conn)
+    #     game.check_for_accomplished_tickets(player)
 
     game.play_game()
 
