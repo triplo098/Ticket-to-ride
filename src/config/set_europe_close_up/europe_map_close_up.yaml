@@ -4,17 +4,30 @@ connections:
   - cities: [Paris, Brest]
     cost: [black, black, black]
 
-  - cities: [Brest, Palermo]
-    cost: [pink, pink, pink, pink]
-
-  - cities: [Paris, Palermo]
-    cost: [green, green, green, green]
-
-  - cities: [Paris, Palermo]
-    cost: [blue, blue, blue, blue]
+#  - cities: [Brest, Palermo]
+#    cost: [pink, pink, pink, pink]
+#    control_points: [[150, 350], [250, 450]]
+#
+#  - cities: [Paris, Palermo]
+#    cost: [green, green, green, green]
+#    control_points: [[250, 380], [300, 450]]
+#
+#  - cities: [Paris, Palermo]
+#    cost: [blue, blue, blue, blue]
+#    control_points: [[220, 350], [300, 420]]
 
   - cities: [Paris, Bordeaux]
     cost: [pink]
+
+  - cities: [Danzig, Berlin]
+    cost: [grey, grey, grey, grey]
+
+  - cities: [Danzig, Munich]
+    cost: [green, green, green]
+    control_points: [[400, 260], [320, 320]]
+
+  - cities: [Warsaw, Vilnius]
+    cost: [red, red, red]
 
 tickets:
   - cities: [Paris, Brest]
