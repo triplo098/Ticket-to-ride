@@ -29,6 +29,7 @@ class DestinationTicketCard:
     def is_accomplished(self, player: "Player"):
         """
         Checks if the destination ticket is accomplished for the given player.
+        DFS is used to check if there is a path between the start and end cities.
         """
         from player import Player
 

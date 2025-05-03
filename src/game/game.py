@@ -248,10 +248,14 @@ class Game:
         Returns True if successful, False otherwise - route is taken or player has to few cards.
         """
 
-        if city_conn.owner is not None:
-            print("This route is already claimed by another player.")
+        if city_conn.owner is player:
+            print("You have already claimed this connection.")
             return False
-
+        
+        elif city_conn.owner is not None:
+            print("This connection is already claimed by another player.")
+            return False
+        
         conn_cost = Counter(city_conn.cost)
         player_trains = Counter(player.train_cards)
 
@@ -431,8 +435,20 @@ def main():
     #     game.claim_conn(player, conn)
     #     game.check_for_accomplished_tickets(player)
 
-    game.play_game()
+    # game.play_game()
 
+    for city in game.map.cities:
+        
+        for conn in city.connections:
+
+
+            game.claim_conn(game.players[0], conn)
+
+    game.check_for_accomplished_tickets(game.players[0])
+    print(game.players[0].score)
+
+    longest_route = game.players[0].get_longest_route()  
+    print(f"Longest route: {longest_route}")
 
 if __name__ == "__main__":
     main()
