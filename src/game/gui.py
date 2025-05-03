@@ -1,8 +1,8 @@
 import pygame
-import os
 import math
 from collections import namedtuple
 import yaml
+from pathlib import Path
 
 class GUI:
     def __init__(self, game):
@@ -28,8 +28,9 @@ class GUI:
         }
 
         # Load map data from YAML file
-        yaml_path = "/home/adam/ticket-to-ride/Ticket-to-ride/src/config/set_europe_close_up/europe_map_close_up.yaml"
-        self.load_map_data(yaml_path)
+        script_dir = Path(__file__).resolve().parent
+        yaml_path = script_dir / '../config/set_europe_close_up/europe_map_close_up.yaml'
+        self.load_map_data(str(yaml_path))
 
     def load_map_data(self, yaml_path):
         # Create simple data structures to hold city and connection info
@@ -67,8 +68,8 @@ class GUI:
 
     def draw(self):
         # Load the background image
-        script_dir = os.path.dirname(os.path.abspath(__file__))  # Get the directory of the current script
-        map_path = os.path.join(script_dir, '../config/set_europe_close_up/Europe_Map.jpg')
+        script_dir = Path(__file__).resolve().parent
+        map_path = script_dir / '../config/set_europe_close_up/Europe_Map.jpg'
         background_image = pygame.image.load(map_path)
 
         # Draw the background image on the screen
