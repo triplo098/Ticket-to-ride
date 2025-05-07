@@ -7,12 +7,15 @@ from pathlib import Path
 class GUI:
     def __init__(self, game):
         self.game = game
-        self.screen = pygame.display.set_mode((1050, 578))
+        # Use the RESIZABLE flag to allow window resizing
+        self.screen = pygame.display.set_mode((1050, 578), pygame.RESIZABLE)
         pygame.display.set_caption("Ticket to Ride")
         pygame.font.init()  # Initialize the font module
         self.clock = pygame.time.Clock()
 
-
+        # Initialize original dimensions of the map
+        self.original_width = 1050  # Set this to the actual width of your map image
+        self.original_height = 578  # Set this to the actual height of your map image
 
         # Color mapping for routes
         self.color_map = {
@@ -67,25 +70,30 @@ class GUI:
             self.connections = []
 
     def draw(self):
-        # Load the background image
+        # Load and scale the background image
         script_dir = Path(__file__).resolve().parent
         map_path = script_dir / '../config/set_europe_close_up/Europe_Map.jpg'
         background_image = pygame.image.load(map_path)
-
-        # Draw the background image on the screen
-        self.screen.blit(background_image, (0, 0))  # Draw at the top-left corner of the screen (0, 0)
+        scaled_background = pygame.transform.scale(
+            background_image, self.screen.get_size()
+        )
+        self.screen.blit(scaled_background, (0, 0))  # Draw at the top-left corner of the screen (0, 0)
 
         # Draw routes first (so they appear behind cities)
         self.draw_routes()
 
         for city in self.game.map.cities:
+            # Scale city coordinates
+            scaled_point = self.scale_coordinates(*city.point)
+
             # Draw each city
-            pygame.draw.circle(self.screen, (0, 0, 0), city.point, 5)
+            pygame.draw.circle(self.screen, (0, 0, 0), scaled_point, 5)
+
             # Draw city name
             font = pygame.font.Font(None, 24)
             text = font.render(city.name, True, (0, 0, 0))
             offset = (10, -10)  # Offset for the city name (x, y)
-            text_rect = text.get_rect(center=(city.point[0] + offset[0], city.point[1] + offset[1]))
+            text_rect = text.get_rect(center=(scaled_point[0] + offset[0], scaled_point[1] + offset[1]))
             self.screen.blit(text, text_rect)
 
     def draw_routes(self):
@@ -127,9 +135,9 @@ class GUI:
         if not city1 or not city2:
             return  # Skip if cities not found
 
-        # Get coordinates
-        x1, y1 = city1.point
-        x2, y2 = city2.point
+        # Scale coordinates
+        x1, y1 = self.scale_coordinates(*city1.point)
+        x2, y2 = self.scale_coordinates(*city2.point)
 
         # Calculate direction and distance
         dx = x2 - x1
@@ -188,13 +196,13 @@ class GUI:
             # Create polygon points for the rectangle
             points = [
                 (center_x - dx * segment_length / 2 + perpx * rect_width / 2,
-                 center_y - dy * segment_length / 2 + perpy * rect_width / 2),
+                center_y - dy * segment_length / 2 + perpy * rect_width / 2),
                 (center_x - dx * segment_length / 2 - perpx * rect_width / 2,
-                 center_y - dy * segment_length / 2 - perpy * rect_width / 2),
+                center_y - dy * segment_length / 2 - perpy * rect_width / 2),
                 (center_x + dx * segment_length / 2 - perpx * rect_width / 2,
-                 center_y + dy * segment_length / 2 - perpy * rect_width / 2),
+                center_y + dy * segment_length / 2 - perpy * rect_width / 2),
                 (center_x + dx * segment_length / 2 + perpx * rect_width / 2,
-                 center_y + dy * segment_length / 2 + perpy * rect_width / 2),
+                center_y + dy * segment_length / 2 + perpy * rect_width / 2),
             ]
 
             # Draw filled rectangle
@@ -362,6 +370,18 @@ class GUI:
             segment_start_index = segment_end_index + 3  # Skip some points to create a gap
             distance_traveled = segment_end_distance + gap
 
+    def get_scaling_factor(self):
+        #Calculate the scaling factor based on the current screen size.
+        current_width, current_height = self.screen.get_size()
+        scale_x = current_width / self.original_width
+        scale_y = current_height / self.original_height
+        return scale_x, scale_y
+
+    def scale_coordinates(self, x, y):
+        #Scale coordinates according to the current scaling factor.
+        scale_x, scale_y = self.get_scaling_factor()
+        return int(x * scale_x), int(y * scale_y)
+
     def run(self):
         running = True
         while running:
@@ -372,5 +392,6 @@ class GUI:
             self.draw()
             pygame.display.flip()
             self.clock.tick(60)
+
 
         pygame.quit()

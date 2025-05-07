@@ -16,18 +16,160 @@ connections:
 #    cost: [blue, blue, blue, blue]
 #    control_points: [[220, 350], [300, 420]]
 
-  - cities: [Paris, Bordeaux]
-    cost: [pink]
+#  - cities: [Paris, Bordeaux]
+#    cost: [pink]
 
   - cities: [Danzig, Berlin]
     cost: [grey, grey, grey, grey]
 
-  - cities: [Danzig, Munich]
-    cost: [green, green, green]
-    control_points: [[400, 260], [320, 320]]
+  - cities: [Danzig, Riga]
+    cost: [black, black, black]
+    #control_points: [[400, 260], [320, 320]]
 
   - cities: [Warsaw, Vilnius]
     cost: [red, red, red]
+
+  - cities: [Edinburgh, London]
+    cost: [orange, orange, orange, orange]
+
+  - cities: [Brest, Dieppe]
+    cost: [orange, orange]
+
+  - cities: [Amsterdam, Essen]
+    cost: [yellow, yellow, yellow]
+
+  - cities: [Amsterdam, Brussels]
+    cost: [black]
+
+  - cities: [Amsterdam, Frankfurt]
+    cost: [white, white]
+
+  - cities: [Essen, Berlin]
+    cost: [green, green]
+
+  - cities: [Petersburg, Moscow]
+    cost: [white, white, white, white]
+
+  - cities: [Petersburg, Vilnius]
+    cost: [blue, blue, blue, blue]
+
+  - cities: [Vilnius, Smolensk]
+    cost: [brown, brown, brown]
+
+  - cities: [Moscow, Kharkov]
+    cost: [grey, grey, grey, grey]
+
+  - cities: [Kyiv, Bucharest]
+    cost: [brown, brown, brown, brown]
+
+  - cities: [Bucharest, Sofia]
+    cost: [grey, grey]
+
+  - cities: [Bucharest, Constantinople]
+    cost: [yellow, yellow]
+
+  - cities: [Bucharest, Sevastopol]
+    cost: [white, white, white, white]
+
+  - cities: [Sofia, Constantinople]
+    cost: [blue, blue, blue]
+
+  - cities: [Sofia, Athens]
+    cost: [pink, pink, pink]
+
+  - cities: [Sofia, Bucharest]
+    cost: [grey, grey]
+
+  - cities: [Madrid, Cádiz]
+    cost: [orange, orange, orange]
+
+  - cities: [Madrid, Barcelona]
+    cost: [green, green]
+
+  - cities: [Madrid, Pamplona]
+    cost: [white, white, white]
+    
+  - cities: [Madrid, Pamplona]
+    cost: [black, black, black]
+
+  - cities: [Barcelona, Marseille]
+    cost: [yellow, yellow, yellow, yellow]
+
+  - cities: [Pamplona, Marseille]
+    cost: [red, red, red, red]
+
+  - cities: [Marseille, Rome]
+    cost: [grey, grey, grey, grey]
+
+  - cities: [Brest, Pamplona]
+    cost: [pink, pink, pink, pink]
+
+  - cities: [Brussels, Paris]
+    cost: [yellow, yellow]
+
+  - cities: [Brussels, Paris]
+    cost: [red, red]
+
+  - cities: [Paris, Marseille]
+    cost: [grey, grey, grey, grey]
+
+  - cities: [Paris, Pamplona]
+    cost: [blue, blue, blue, blue]
+
+  - cities: [Paris, Pamplona]
+    cost: [green, green, green, green]
+  
+  - cities: [Brussels, Frankfurt]
+    cost: [blue, blue]
+
+  - cities: [Brussels, Amsterdam]
+    cost: [black]
+
+  - cities: [Frankfurt, Berlin]
+    cost: [red, red, red]
+
+  - cities: [Frankfurt, Berlin]
+    cost: [black, black, black]
+
+  - cities: [Berlin, Essen]
+    cost: [green, green]
+
+  - cities: [Frankfurt, Munich]
+    cost: [pink, pink]
+
+  - cities: [Munich, Wien]
+    cost: [orange, orange, orange]
+
+  - cities: [Venice, Zagreb]
+    cost: [yellow, yellow] 
+
+  - cities: [Danzig, Warsaw]
+    cost: [brown, brown]
+
+  - cities: [Warsaw, Kyiv]
+    cost: [grey, grey, grey, grey]
+
+  - cities: [Warsaw, Wien]
+    cost: [blue, blue, blue, blue]
+
+  - cities: [Warsaw, Berlin]
+    cost: [pink, pink, pink, pink] 
+
+  - cities: [Warsaw, Berlin]
+    cost: [black, black, black, black]
+
+  - cities: [Budapest, Wien]
+    cost: [red]
+
+  - cities: [Budapest, Wien]
+    cost: [white]
+
+  - cities: [Budapest, Sarajevo]
+    cost: [pink, pink, pink]
+
+  - cities: [Budapest, Zagreb]
+    cost: [orange, orange]  
+
 
 tickets:
   - cities: [Paris, Brest]
@@ -40,12 +182,15 @@ tickets:
     points: 7 
 
 cities:
-  - name: Bordeaux
-    x: 181
-    y: 365
+  - name: Venice
+    x: 392
+    y: 376
   - name: Brest
     x: 111
     y: 297
+  - name: Dieppe
+    x: 163
+    y: 264
   - name: Palermo
     x: 392
     y: 521
@@ -65,13 +210,13 @@ cities:
     x: 100
     y: 490
   - name: Vilnius 
-    x: 627
-    y: 219
+    x: 588
+    y: 132
   - name: Danzig
     x: 490
     y: 140
   - name: Berlin
-    x: 393
+    x: 413
     y: 220
   - name: Essen
     x: 323
@@ -94,3 +239,72 @@ cities:
   - name: Marseille
     x: 292
     y: 412
+  - name: Cádiz
+    x: 91
+    y: 557
+  - name: Zurich
+    x: 303
+    y: 329
+  - name: Rome
+    x: 378
+    y: 420
+  - name: Zagreb
+    x: 454
+    y: 378
+  - name: Edinburgh
+    x: 130
+    y: 100
+  - name: Wien
+    x: 430
+    y: 292
+  - name: Budapest
+    x: 480
+    y: 320
+  - name: Sarajevo
+    x: 496
+    y: 420
+  - name: Sofia
+    x: 585
+    y: 430
+  - name: Athens
+    x: 578
+    y: 510
+  - name: Brindisi
+    x: 473
+    y: 470
+  - name: Riga
+    x: 574
+    y: 58
+  - name: Copenhagen
+    x: 394
+    y: 100
+  - name: Moscow
+    x: 830
+    y: 100
+  - name: Petersburg
+    x: 746
+    y: 50
+  - name: Smolensk
+    x: 730
+    y: 132
+  - name: Kyiv
+    x: 690
+    y: 240
+  - name: Bucharest
+    x: 592
+    y: 370
+  - name: Sevastopol
+    x: 742
+    y: 344
+  - name: Smyrna
+    x: 648
+    y: 526
+  - name: Constantinople
+    x: 700
+    y: 470
+  - name: Angora
+    x: 742
+    y: 508
+  - name: Kharkov
+    x: 813
+    y: 290
