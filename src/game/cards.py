@@ -13,8 +13,9 @@ class TrainCard(Enum):
     ORANGE = 6
     GREEN = 7
     RED = 8
-    LOCOMOTIVE = 9
-    GREY = 10
+    BROWN = 9
+    LOCOMOTIVE = 10
+    GREY = 11
 
     def __str__(self):
         return f"{self.name}"

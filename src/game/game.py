@@ -1,4 +1,7 @@
 from collections import Counter
+
+import pygame
+
 from map import Map, City, CityConnection, get_city_by_name
 from cards import (
     DestinationTicketCard,
@@ -9,6 +12,7 @@ from cards import (
 )
 from player import Player
 from gui import GUI
+import threading
 
 class Game:
     """
@@ -47,12 +51,12 @@ class Game:
             f"Game Over: {self.game_over}"
         )
 
-    def play_game(self):
+    def play_game(self, gui: GUI):
         """
         Play the game loop.
         """
         while not self.game_over:
-            self.play_turn()
+            self.play_turn(gui)
             if self.if_start_last_round():
                 self.game_over = True
 
@@ -145,7 +149,7 @@ class Game:
                 else:
                     self.destination_tickets_deck.add_card_to_bottom(ticket)
 
-    def play_turn(self):
+    def play_turn(self, gui: GUI):
         """
         Plays a turn for the current player.
         """
@@ -168,10 +172,71 @@ class Game:
                 self.draw_destination_tickets(player)
                 pass
 
-            # TODO: Implement claim route
+            case "3":
+            # Gather all unique connections into a flat list
+                all_conns = []
+                seen = set()
+                for city in self.map.cities:
+                    for conn in city.connections:
+                        if id(conn) not in seen:
+                            all_conns.append(conn)
+                            seen.add(id(conn))
+
+                    # Now print just the index and city names for each connection
+                print("Available routes:")
+                for idx, conn in enumerate(all_conns):
+                    city1, city2 = conn.cities
+                    status = (
+                        f"CLAIMED BY P{conn.claimed_by + 1}"
+                        if conn.claimed_by is not None
+                        else "unclaimed"
+                    )
+                    print(f"  {idx}. {city1.name} ↔ {city2.name} ({status})")
+
+                sel = int(input("Enter route index to claim: "))
+                if 0 <= sel < len(all_conns):
+                    #self.claim_route(connection, self.current_player_index)
+                    self.claim_route(all_conns[sel], self.current_player_index)
+                else:
+                    print("Invalid route index.")
 
         self.turn_number += 1
         self.current_player_index = (self.current_player_index + 1) % len(self.players)
+
+    def claim_route(self, conn, player_index):
+        player = self.players[player_index]
+
+        # … previous checks …
+
+        # If the route is gray, ask what color to spend
+        if conn.cost and conn.cost[0] == TrainCard.GREY:
+            length = len(conn.cost)
+            print(f"This is a gray route of length {length}.")
+            print("Choose which color to spend:")
+            for i, color in enumerate((TrainCard.PINK, TrainCard.WHITE, TrainCard.BLACK,
+                                       TrainCard.BLUE, TrainCard.YELLOW, TrainCard.ORANGE,
+                                       TrainCard.GREEN, TrainCard.RED)):
+                print(f"  {i}. {color.name}")
+            choice = int(input("Color index: "))
+            chosen_color = (TrainCard.PINK, TrainCard.WHITE, TrainCard.BLACK,
+                            TrainCard.BLUE, TrainCard.YELLOW, TrainCard.ORANGE,
+                            TrainCard.GREEN, TrainCard.RED)[choice]
+
+            # build an actual cost list of that color
+            real_cost = [chosen_color] * length
+        else:
+            # non‐gray: use the predefined cost
+            real_cost = conn.cost
+
+        # Now check affordability against real_cost, spend cards, etc.
+        if not player.can_afford(real_cost):
+            print("You do not have enough cards of that color (or locomotives).")
+            return
+
+        player.spend_cards(real_cost)
+        player.trains -= len(real_cost)
+        conn.claimed_by = player_index
+        print(f"{player.name} claimed {conn.cities[0].name} ↔ {conn.cities[1].name}!")
 
     def if_start_last_round(self):
         """
@@ -184,6 +249,11 @@ class Game:
 
         return False
 
+def console_loop(game, gui):
+    # This runs in a worker thread, handling your text I/O
+    game.play_game(gui)
+    # When done, signal the GUI to quit
+    pygame.event.post(pygame.event.Event(pygame.QUIT))
 
 def main():
 
@@ -198,7 +268,7 @@ def main():
     for i in range(2):
         player = Player(
             name=f"Player {i + 1}",
-            train_cards=[train_cards_deck.draw_card() for i in range(5)],
+            train_cards=[train_cards_deck.draw_card() for i in range(30)],
         )
         players.append(player)
 
@@ -219,12 +289,18 @@ def main():
     print("\nGame created successfully!")
     print(game)
 
-    # Initialize GUI
+    # --- initialize GUI ---
     gui = GUI(game)
 
+    # 1) Start the console loop in a background thread
+    console_thread = threading.Thread(target=console_loop, args=(game, gui), daemon=False)
+    console_thread.start()
+
+    # 2) Run the Pygame GUI in the **main** thread
     gui.run()
 
-    game.play_game()
+    # 3) Wait for console thread to finish cleanly
+    console_thread.join()
 
 
 if __name__ == "__main__":

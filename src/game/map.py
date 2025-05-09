@@ -26,16 +26,20 @@ class CityConnection:
     def __init__(self, cost: list[TrainCard], connected_cities: {City}):
 
         self.cost = cost  # List of train cards needed to create a connection
-        self.cities = (
-            connected_cities  # Set of connected cities; number of cities should be 2
-        )
-
-        if len(connected_cities) != 2:
+        cities_list = list(connected_cities)
+        if len(cities_list) != 2:
             raise ValueError("CityConnection should connect exactly two cities")
+        self.cities = (cities_list[0], cities_list[1])
+        self.claimed_by: int | None = None
 
-        connected_cities = list(connected_cities)
-        connected_cities[0].connections.append(self)
-        connected_cities[1].connections.append(self)
+        # register this connection on each city
+        self.cities[0].connections.append(self)
+        self.cities[1].connections.append(self)
+
+        # initialize ownership flag
+        self.claimed_by: int | None = None
+
+
 
     def __str__(self):
 
@@ -54,9 +58,17 @@ class Map:
     ):
 
         self.cities = cities
+        self.connections: list[CityConnection] = []
 
         if not cities:
             self.init_cities_from_config(config_file)
+
+        seen = set()
+        for city in self.cities:
+            for conn in city.connections:
+                if id(conn) not in seen:
+                    self.connections.append(conn)
+                    seen.add(id(conn))
 
     def __str__(self):
         return "Map: [\n" + " ".join(str(city) for city in self.cities) + "]"
