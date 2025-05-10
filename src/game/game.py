@@ -9,6 +9,7 @@ from cards import (
 )
 from player import Player
 from gui import GUI
+from threading import Thread
 
 
 class Game:
@@ -424,23 +425,23 @@ def main():
     print(game)
 
     # Initialize GUI
-    # gui = GUI(game)
-    # # gui.run()
+    def run_gui():
+        gui = GUI(game)
+        gui.run()
 
-    # while True:
+    def run_game():
+        game.play_game()
 
-    #     player = game.players[0]
-    #     print(player)
-    #     conn = game.choose_conn(player)
-    #     game.claim_conn(player, conn)
-    #     game.check_for_accomplished_tickets(player)
+    # Start GUI in a separate thread
+    gui_thread = Thread(target=run_gui)
+    gui_thread.start()
 
-    # game.play_game()
+    # Run the game logic in the main thread
+    run_game()
 
     for city in game.map.cities:
         
         for conn in city.connections:
-
 
             game.claim_conn(game.players[0], conn)
 
