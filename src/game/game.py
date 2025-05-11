@@ -408,11 +408,6 @@ def main():
         players=[Player(name=f"Player {i + 1}") for i in range(2)],
     )
 
-    # Setup game
-    game.setup_game()
-
-    for player in game.players:
-        print(player)
 
     game.players[0].train_cards.extend(
         [TrainCard.BLUE, TrainCard.BLACK] * 5
@@ -436,6 +431,15 @@ def main():
     gui_thread = Thread(target=run_gui)
     gui_thread.start()
 
+
+
+    # Setup game for players
+    game.setup_game()
+
+    for player in game.players:
+        print(player)
+
+        
     # Run the game logic in the main thread
     run_game()
 

@@ -3,15 +3,20 @@ import math
 from collections import namedtuple
 import yaml
 from pathlib import Path
+import os
 
 class GUI:
-    def __init__(self, game):
+    def __init__(self, game, cards_folder_path = os.path.join(
+            os.path.dirname(__file__), "../cards_graphics"
+        )):
         self.game = game
         # Use the RESIZABLE flag to allow window resizing
         self.screen = pygame.display.set_mode((1050, 578), pygame.RESIZABLE)
         pygame.display.set_caption("Ticket to Ride")
         pygame.font.init()  # Initialize the font module
         self.clock = pygame.time.Clock()
+
+        self.cards_folder_path = cards_folder_path
 
         # Initialize original dimensions of the map
         self.original_width = 1050  # Set this to the actual width of your map image
@@ -95,6 +100,13 @@ class GUI:
             offset = (10, -10)  # Offset for the city name (x, y)
             text_rect = text.get_rect(center=(scaled_point[0] + offset[0], scaled_point[1] + offset[1]))
             self.screen.blit(text, text_rect)
+
+
+        # self.draw_player_trains() TODO
+
+        self.draw_player_cards()
+        self.draw_open_cards()
+
 
     def draw_routes(self):
         # Group connections between the same cities to handle double routes
@@ -369,6 +381,90 @@ class GUI:
             # Add gap before next segment
             segment_start_index = segment_end_index + 3  # Skip some points to create a gap
             distance_traveled = segment_end_distance + gap
+    
+    def draw_player_cards(self):
+        player = self.game.players[self.game.current_player_index]
+        # Draw player cards
+        for i, card in enumerate(player.train_cards):
+            # Calculate dynamic card size based on window dimensions
+            current_width, current_height = self.screen.get_size()
+            card_width = int(current_width * 0.06)  # 6% of window width
+            card_height = int(card_width * (1200 / 1900))  # Maintain aspect ratio
+
+            # Calculate card position dynamically based on screen size
+            x = current_width * 0.05 + i * (current_width * 0.05)  # 5% margin + spacing
+            y = current_height * 0.05  # Place near the bottom of the screen
+
+            # Construct the file path for the card image
+            card_image_path = os.path.join(self.cards_folder_path, f"{card.name.lower()}.jpg")
+
+            try:
+                # Load the card image
+                card_image = pygame.image.load(card_image_path)
+
+                # Scale the card image to fit the dynamically calculated dimensions
+                card_image = pygame.transform.scale(card_image, (card_width, card_height))
+
+                # Draw the card image on the screen
+                self.screen.blit(card_image, (x, y))
+            except pygame.error as e:
+                print(f"Error loading card image {card_image_path}: {e}")
+
+                # Fallback: Draw a placeholder rectangle if the image fails to load
+                pygame.draw.rect(self.screen, (255, 255, 255), (x, y, card_width, card_height))
+                pygame.draw.rect(self.screen, (0, 0, 0), (x, y, card_width, card_height), 1)
+
+        # Draw the player's name above their cards
+        font = pygame.font.Font(None, 36)  # Use a larger font size for the name
+        text = font.render(player.name, True, (0, 0, 0))  # Render the player's name in black
+        text_rect = text.get_rect(center=(current_width * 0.05 + len(player.train_cards) * (current_width * 0.025), y - 30))
+        self.screen.blit(text, text_rect)
+        
+    def draw_open_cards(self):
+        # Draw open cards deck on the upper part of the screen
+        open_cards = self.game.open_cards_deck.cards
+
+        for i, card in enumerate(open_cards):
+            # Calculate dynamic card size based on window dimensions
+            current_width, current_height = self.screen.get_size()
+            card_width = int(current_width * 0.06)  # 6% of window width
+            card_height = int(card_width * (1200 / 1900))  # Maintain aspect ratio
+
+            # Calculate card position dynamically based on screen size
+            x = current_width * 0.6 + i * (card_width + current_width * 0.01)  # 60% margin + spacing
+            y = current_height * 0.92  # Place near the top of the screen
+
+            # Construct the file path for the card image
+            card_image_path = os.path.join(self.cards_folder_path, f"{card.name.lower()}.jpg")
+
+            try:
+                # Load the card image
+                card_image = pygame.image.load(card_image_path)
+
+                # Scale the card image to fit the dynamically calculated dimensions
+                card_image = pygame.transform.scale(card_image, (card_width, card_height))
+
+                # Draw the card image on the screen
+                self.screen.blit(card_image, (x, y))
+            except pygame.error as e:
+                print(f"Error loading card image {card_image_path}: {e}")
+
+                # Fallback: Draw a placeholder rectangle if the image fails to load
+                pygame.draw.rect(self.screen, (255, 255, 255), (x, y, card_width, card_height))
+                pygame.draw.rect(self.screen, (0, 0, 0), (x, y, card_width, card_height), 1)
+
+        # Draw the label "Open Cards" above the open cards
+        font = pygame.font.Font(None, 36)  # Use a larger font size for the label
+        label_text = "Open Cards"
+        text = font.render(label_text, True, (0, 0, 0))  # Render the label in black
+        text_rect = text.get_rect(center=(current_width * 0.6 + len(open_cards) * (card_width + current_width * 0.01) / 2, y - 30))
+        self.screen.blit(text, text_rect)
+
+        # Draw the deck of remaining train cards
+        deck_x = current_width * 0.6 + len(open_cards) * (card_width + current_width * 0.01)  # Place next to the open cards
+        deck_y = current_height * 0.1  # Place near the top of the screen
+
+
 
     def get_scaling_factor(self):
         #Calculate the scaling factor based on the current screen size.
