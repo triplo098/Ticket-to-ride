@@ -54,13 +54,13 @@ connections:
     cost: [blue, blue, blue, blue]
 
   - cities: [Vilnius, Smolensk]
-    cost: [grey, grey, grey]
+    cost: [brown, brown, brown]
 
   - cities: [Moscow, Kharkov]
     cost: [grey, grey, grey, grey]
 
   - cities: [Kyiv, Bucharest]
-    cost: [grey, grey, grey, grey]
+    cost: [brown, brown, brown, brown]
 
   - cities: [Bucharest, Sofia]
     cost: [grey, grey]
@@ -144,7 +144,7 @@ connections:
     cost: [yellow, yellow] 
 
   - cities: [Danzig, Warsaw]
-    cost: [grey, grey]
+    cost: [brown, brown]
 
   - cities: [Warsaw, Kyiv]
     cost: [grey, grey, grey, grey]
@@ -170,6 +170,21 @@ connections:
   - cities: [Budapest, Zagreb]
     cost: [orange, orange]  
 
+  - cities: [Smyrna, Angora]
+    cost: [orange, orange, orange] 
+
+  - cities: [Smolensk, Moscow]
+    cost: [orange, orange]
+
+  - cities: [Smolensk, Kyiv]
+    cost: [red, red, red]
+
+  - cities: [Sarajevo, Sofia]
+    cost: [yellow, yellow]
+
+  - cities: [Sarajevo, Athens]
+    cost: [green, green, green, green]
+
 
 tickets:
   - cities: [Paris, Brest]
@@ -181,39 +196,6 @@ tickets:
   - cities: [Paris, Palermo]
     points: 7 
 
-  - cities: [Madrid, Berlin]
-    points: 12  
-
-  - cities: [Paris, Moscow]
-    points: 20
-
-  - cities: [London, Rome]
-    points: 10
-
-  - cities: [Amsterdam, Vienna]
-    points: 8
-
-  - cities: [Warsaw, Athens]
-    points: 15
-
-  - cities: [Edinburgh, Marseille]
-    points: 13
-
-  - cities: [Barcelona, Zurich]
-    points: 9
-
-  - cities: [Brest, Budapest]
-    points: 14
-
-  - cities: [Copenhagen, Sofia]
-    points: 16
-
-  - cities: [Vilnius, Sevastopol]
-    points: 17
-
-  - cities: [Brussels, Zagreb]
-    points: 11
- 
 cities:
   - name: Venice
     x: 392
