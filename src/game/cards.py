@@ -120,6 +120,9 @@ class TrainCardsDeck(Deck):
         ] * 12 + [TrainCard.LOCOMOTIVE] * 14
         self.shuffle()
 
+
+        self.screen_position = (0.9, 0.2) # From 0 to 1. 0, 0 is the top left corner, 1, 1 is the bottom right corner
+
     def __str__(self):
         return f"TrainCardsDeck: [{', '.join(str(card) for card in self.cards)}]"
 
@@ -137,6 +140,9 @@ class DestinationTicketsDeck(Deck):
 
         if not cards:
             self.init_deck_from_config(config_file)
+
+
+        self.screen_position = (0.5, 0.5) # From 0 to 1. 0, 0 is the top left corner, 1, 1 is the bottom right corner
 
     def init_deck_from_config(self, config_file: str):
         """
@@ -165,6 +171,8 @@ class OpenCardsDeck(Deck):
         self.cards = []
         self.train_cards_deck = train_cards_deck
         self.draw_initial_cards()
+        self.screen_position = (0.6, 0.02) # From 0 to 1. 0, 0 is the top left corner, 1, 1 is the bottom right corner
+        self.screen_gap = 0.05 # Gap between cards on the screen
 
     def __str__(self):
         return f"OpenCardsDeck: [ {' '.join(str(card) for card in self.cards)}]"
