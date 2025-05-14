@@ -619,11 +619,9 @@ class GUI:
         card_width = int(current_width * 0.06)
         card_height = int(card_width * (1200 / 1900))
 
-        x = current_width * self.game.destination_tickets_deck.screen_position[0] + len(self.game.open_cards_deck.cards) * (
-            card_width + current_width * 0.01
-        )
-
+        x = current_width * self.game.destination_tickets_deck.screen_position[0]
         y = current_height * self.game.destination_tickets_deck.screen_position[1]
+        
         card_image_path = os.path.join(
             self.cards_folder_path, "destination_ticket_card.jpg"
         )
@@ -709,14 +707,13 @@ class GUI:
         current_width, current_height = self.screen.get_size()
         card_width = int(current_width * 0.06)
         card_height = int(card_width * (1200 / 1900))
-        x = current_width * self.game.destination_tickets_deck.screen_position[0] + len(self.game.open_cards_deck.cards) * (
-            card_width + current_width * 0.01
-        )
+        x = current_width * self.game.destination_tickets_deck.screen_position[0]
         y = current_height * self.game.destination_tickets_deck.screen_position[1]
         card_rect = pygame.Rect(x, y, card_width, card_height)
         if card_rect.collidepoint(event.pos):
             return True
         return False
+    
 
     def run(self):
         running = True
@@ -730,8 +727,7 @@ class GUI:
                     city = self.get_clicked_city(event)
                     if city:
                         print(f"Clicked on city: {city.name}")
-                    else:
-                        print("No city clicked.")
+                    
 
 
                     open_card_index = self.get_open_card_index(event)

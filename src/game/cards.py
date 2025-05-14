@@ -142,7 +142,7 @@ class DestinationTicketsDeck(Deck):
             self.init_deck_from_config(config_file)
 
 
-        self.screen_position = (0.5, 0.5) # From 0 to 1. 0, 0 is the top left corner, 1, 1 is the bottom right corner
+        self.screen_position = (0.9, 0.4) # From 0 to 1. 0, 0 is the top left corner, 1, 1 is the bottom right corner
 
     def init_deck_from_config(self, config_file: str):
         """
