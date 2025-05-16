@@ -122,17 +122,11 @@ connections:
   - cities: [Brussels, Frankfurt]
     cost: [blue, blue]
 
-  - cities: [Brussels, Amsterdam]
-    cost: [black]
-
   - cities: [Frankfurt, Berlin]
     cost: [red, red, red]
 
   - cities: [Frankfurt, Berlin]
     cost: [black, black, black]
-
-  - cities: [Berlin, Essen]
-    cost: [green, green]
 
   - cities: [Frankfurt, Munich]
     cost: [pink, pink]

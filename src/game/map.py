@@ -53,10 +53,9 @@ class CityConnection:
     def __init__(self, cost: list[TrainCard], connected_cities: {City}):
 
         self.cost = cost  # List of train cards needed to create a connection
-        self.cities = (
-            connected_cities  # Set of connected cities; number of cities should be 2
-        )
-        self.owner = None  # Player who owns this connection
+        self.cities = connected_cities  # Set of connected cities; number of cities should be 2
+
+        self.claimed_by = None
 
         if len(connected_cities) != 2:
             raise ValueError("CityConnection should connect exactly two cities")
@@ -64,6 +63,17 @@ class CityConnection:
         connected_cities = list(connected_cities)
         connected_cities[0].connections.append(self)
         connected_cities[1].connections.append(self)
+
+        for city in connected_cities:
+            city.connections.append(self)
+
+    def __eq__(self, other):
+        if not isinstance(other, CityConnection):
+            return False
+        return set(self.cities) == set(other.cities) and self.cost == other.cost
+
+    def __hash__(self):
+        return hash((frozenset(self.cities), tuple(self.cost)))
     def get_score_for_claiming(self):
         """
         Returns the score for claiming this connection.
@@ -101,13 +111,14 @@ class CityConnection:
 class Map:
     def __init__(
         self,
-        cities: list[City] = [],
+        cities: list[City] = None,
+        connections: list[CityConnection] = None,
         config_file: str = os.path.join(
             os.path.dirname(__file__), "../config//set_europe_close_up/europe_map_close_up.yaml"
         ),
     ):
-
-        self.cities = cities
+        self.cities = cities or []
+        self.connections = connections or []
 
         if not cities:
             self.init_cities_from_config(config_file)
@@ -145,10 +156,11 @@ class Map:
             if city1 and city2:
                 # Create the connection between these two cities
                 connected_cities = {city1, city2}
-                CityConnection(cost, connected_cities)
+                conn = CityConnection(cost, connected_cities)
+                self.connections.append(conn)
             else:
                 print(
-                    f"Warning: Could not find cities: {', '.join(city1_name, city2_name)}"
+                    print(f"Warning: Could not find cities: {', '.join([city1_name, city2_name])}")
                 )
 
 

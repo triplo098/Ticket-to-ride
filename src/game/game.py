@@ -215,7 +215,7 @@ class Game:
         city1 = self.map.cities[city1_index]
         city2 = self.map.cities[city2_index]
 
-        cities_connections = city1.get_all_connections_between_cities(city2)
+        cities_connections = list(dict.fromkeys(city1.get_all_connections_between_cities(city2)))
 
         city_conn = None
 
@@ -249,11 +249,11 @@ class Game:
         Returns True if successful, False otherwise - route is taken or player has to few cards.
         """
 
-        if city_conn.owner is player:
+        if city_conn.claimed_by is player:
             print("You have already claimed this connection.")
             return False
         
-        elif city_conn.owner is not None:
+        elif city_conn.claimed_by is not None:
             print("This connection is already claimed by another player.")
             return False
         
@@ -309,7 +309,7 @@ class Game:
         # Turn summary
         player.trains -= len(city_conn.cost)
         player.score += city_conn.get_score_for_claiming()
-        city_conn.owner = player
+        city_conn.claimed_by = player
         player.cities_connections.append(city_conn)
 
         print(f"{player.name} claimed the {city_conn}!")

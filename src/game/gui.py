@@ -1,9 +1,9 @@
 import pygame
 import math
-from collections import namedtuple
-import yaml
 from pathlib import Path
 import os
+
+from src.game.map import CityConnection
 
 
 class GUI:
@@ -17,16 +17,17 @@ class GUI:
         self.screen = pygame.display.set_mode((1050, 578), pygame.RESIZABLE)
         pygame.display.set_caption("Ticket to Ride")
         pygame.font.init()  # Initialize the font module
+
+        self.cities = self.game.map.cities
+        self.connections = self.game.map.connections
+
         self.clock = pygame.time.Clock()
 
         self.cards_folder_path = cards_folder_path
         self.city_radius = 7  # Radius for city circles
 
-
         self.card_height = 1200
         self.card_width = 1900
-
-
 
         # Initialize original dimensions of the map
         self.original_width = 1050  # Set this to the actual width of your map image
@@ -45,416 +46,189 @@ class GUI:
             "gray": (128, 128, 128),
         }
 
+        # Player color mapping (assign distinct colors)
+        base_player_colors = [(255, 0, 0), (0, 0, 255), (0, 128, 0), (255, 165, 0)]
+        self.player_colors = {player: base_player_colors[i % len(base_player_colors)]
+                              for i, player in enumerate(self.game.players)}
+
         # Load map data from YAML file
         script_dir = Path(__file__).resolve().parent
         yaml_path = (
             script_dir / "../config/set_europe_close_up/europe_map_close_up.yaml"
         )
-        self.load_map_data(str(yaml_path))
-
-    def load_map_data(self, yaml_path):
-        # Create simple data structures to hold city and connection info
-        self.City = namedtuple("City", ["name", "point"])
-        self.Connection = namedtuple("Connection", ["cities", "cost", "control_points"])
-
-        try:
-            with open(yaml_path, "r") as file:
-                map_data = yaml.safe_load(file)
-
-            # Create city objects
-            self.cities = []
-            for city_data in map_data.get("cities", []):
-                city = self.City(
-                    name=city_data["name"], point=(city_data["x"], city_data["y"])
-                )
-                self.cities.append(city)
-
-            # Create connection objects
-            self.connections = []
-            for conn_data in map_data.get("connections", []):
-                connection = self.Connection(
-                    cities=conn_data["cities"],
-                    cost=conn_data["cost"],
-                    control_points=conn_data.get(
-                        "control_points", None
-                    ),  # Default to None
-                )
-                self.connections.append(connection)
-
-        except Exception as e:
-            print(f"Error loading map data: {e}")
-            # Initialize with empty lists as fallback
-            self.cities = []
-            self.connections = []
 
     def draw(self):
-        # Load and scale the background image
+        # 1) Tło
         script_dir = Path(__file__).resolve().parent
         map_path = script_dir / "../config/set_europe_close_up/Europe_Map.jpg"
-        background_image = pygame.image.load(map_path)
-        scaled_background = pygame.transform.scale(
-            background_image, self.screen.get_size()
-        )
-        self.screen.blit(
-            scaled_background, (0, 0)
-        )  # Draw at the top-left corner of the screen (0, 0)
+        bg_img = pygame.image.load(map_path)
+        scaled_bg = pygame.transform.scale(bg_img, self.screen.get_size())
+        self.screen.blit(scaled_bg, (0, 0))
 
-        # Draw routes first (so they appear behind cities)
         self.draw_routes()
 
-        for city in self.game.map.cities:
-            # Scale city coordinates
-            scaled_point = self.scale_coordinates(*city.point)
+        # 2) Miasta (jedna pętla!)
+        font = pygame.font.Font(None, 24)
+        for city in self.cities:
+            x, y = self.scale_coordinates(*city.point)
+            pygame.draw.circle(self.screen, (0, 0, 0), (x, y), self.city_radius)
 
-            # Draw each city
-            pygame.draw.circle(self.screen, (0, 0, 0), scaled_point, self.city_radius)
+            text_surf = font.render(city.name, True, (0, 0, 0))
+            outline_surf = font.render(city.name, True, (255, 255, 255))
 
-            # Draw city name
-            font = pygame.font.Font(None, 24)
-            text = font.render(city.name, True, (0, 0, 0))
-            offset = (10, -10)  # Offset for the city name (x, y)
-            text_rect = text.get_rect(
-                center=(scaled_point[0] + offset[0], scaled_point[1] + offset[1])
-            )
-            self.screen.blit(text, text_rect)
+            # white contur
+            for dx in (-1, 0, 1):
+                for dy in (-1, 0, 1):
+                    if dx == 0 and dy == 0:
+                        continue
+                    pos = outline_surf.get_rect(center=(x + dx + 10, y + dy - 10))
+                    self.screen.blit(outline_surf, pos)
 
-        # self.draw_player_trains() TODO
+            # black interior
+            pos = text_surf.get_rect(center=(x + 10, y - 10))
+            self.screen.blit(text_surf, pos)
 
         self.draw_player_cards()
         self.draw_open_cards()
         self.draw_trains_deck()
         self.draw_destination_cards()
 
-    def draw_routes(self):
-        # Group connections between the same cities to handle double routes
-        grouped_connections = {}
+    def draw_player_trains(self, conn: CityConnection, parallel_shift=0):
+        """Draw small train‐car rectangles on *this* route, with the same shift."""
+        # endpoints
+        a, b = conn.cities
+        x1, y1 = self.scale_coordinates(*a.point)
+        x2, y2 = self.scale_coordinates(*b.point)
+        dx, dy = x2 - x1, y2 - y1
+        dist = math.hypot(dx, dy)
+        if dist == 0:
+            return
 
-        for connection in self.connections:
-            # Create a key based on the city pair (sorted to ensure consistency)
-            city_pair = tuple(sorted(connection.cities))
-            if city_pair not in grouped_connections:
-                grouped_connections[city_pair] = []
-            grouped_connections[city_pair].append(connection)
+        # normalize
+        dx /= dist
+        dy /= dist
+        # perpendicular
+        px, py = -dy, dx
 
-        # Draw all connections, handling parallel routes where needed
-        for city_pair, connections in grouped_connections.items():
-            if len(connections) == 1:
-                # Single route between cities
-                connection = connections[0]
-                if hasattr(connection, "control_points") and connection.control_points:
-                    self.draw_curved_route(connection, 0)
-                else:
-                    self.draw_route(connection, 0)
-            else:
-                # Double route - draw them parallel to each other
-                for i, connection in enumerate(connections):
-                    # Alternate the shift direction based on index
-                    shift = 0.2 * (-1 if i == 0 else 1)
-                    if (
-                        hasattr(connection, "control_points")
-                        and connection.control_points
-                    ):
-                        self.draw_curved_route(connection, shift)
-                    else:
-                        self.draw_route(connection, shift)
-
-    def draw_route(self, connection, parallel_shift=0):
-        # Get city objects
-        city1_name, city2_name = connection.cities
-        city1 = next((city for city in self.cities if city.name == city1_name), None)
-        city2 = next((city for city in self.cities if city.name == city2_name), None)
-
-        if not city1 or not city2:
-            return  # Skip if cities not found
-
-        # Scale coordinates
-        x1, y1 = self.scale_coordinates(*city1.point)
-        x2, y2 = self.scale_coordinates(*city2.point)
-
-        # Calculate direction and distance
-        dx = x2 - x1
-        dy = y2 - y1
-        distance = math.sqrt(dx * dx + dy * dy)
-
-        # Normalize direction
-        if distance > 0:
-            dx /= distance
-            dy /= distance
-
-        # Calculate perpendicular direction for width and parallel offset
-        perpx = -dy
-        perpy = dx
-
-        # Apply parallel shift for double routes if needed
+        # apply the same parallel shift that draw_route used
         if parallel_shift != 0:
-            x1 += perpx * parallel_shift * 15
-            y1 += perpy * parallel_shift * 15
-            x2 += perpx * parallel_shift * 15
-            y2 += perpy * parallel_shift * 15
-
-            # Recalculate with new points
+            x1 += px * parallel_shift * 25
+            y1 += py * parallel_shift * 25
+            x2 += px * parallel_shift * 25
+            y2 += py * parallel_shift * 25
             dx = x2 - x1
             dy = y2 - y1
-            distance = math.sqrt(dx * dx + dy * dy)
-            if distance > 0:
-                dx /= distance
-                dy /= distance
+            dist = math.hypot(dx, dy)
+            dx /= dist
+            dy /= dist
+            px, py = -dy, dx
 
-        # Define rectangle dimensions
-        cost_colors = connection.cost
-        rect_width = 10  # Width of train route
-        gap = 4  # Gap between rectangles (pixels)
-
-        # Calculate usable distance (leaving space near cities and for gaps)
-        city_offset = 15  # Space to leave near city circles
-        num_segments = len(cost_colors)
-        usable_distance = distance - 2 * city_offset - gap * (num_segments - 1)
-        segment_length = usable_distance / num_segments
-
-        # Calculate starting point
-        start_x = x1 + dx * city_offset
-        start_y = y1 + dy * city_offset
-
-        # Draw each segment according to cost colors
-        for i, color_name in enumerate(cost_colors):
-            # Get RGB color
-            color = self.color_map.get(color_name.lower(), (128, 128, 128))
-
-            # Offset for this segment (includes gap)
-            offset = i * (segment_length + gap) + segment_length / 2
-            center_x = start_x + dx * offset
-            center_y = start_y + dy * offset
-
-            # Create polygon points for the rectangle
-            points = [
-                (
-                    center_x - dx * segment_length / 2 + perpx * rect_width / 2,
-                    center_y - dy * segment_length / 2 + perpy * rect_width / 2,
-                ),
-                (
-                    center_x - dx * segment_length / 2 - perpx * rect_width / 2,
-                    center_y - dy * segment_length / 2 - perpy * rect_width / 2,
-                ),
-                (
-                    center_x + dx * segment_length / 2 - perpx * rect_width / 2,
-                    center_y + dy * segment_length / 2 - perpy * rect_width / 2,
-                ),
-                (
-                    center_x + dx * segment_length / 2 + perpx * rect_width / 2,
-                    center_y + dy * segment_length / 2 + perpy * rect_width / 2,
-                ),
-            ]
-
-            # Draw filled rectangle
-            pygame.draw.polygon(self.screen, color, points)
-
-            # Draw border around rectangle
-            pygame.draw.polygon(self.screen, (0, 0, 0), points, 1)
-
-    def draw_train_segment(self, start_point, end_point, color_name, rect_width):
-        # Get RGB color
-        color = self.color_map.get(color_name.lower(), (128, 128, 128))
-
-        # Calculate direction vector
-        dx = end_point[0] - start_point[0]
-        dy = end_point[1] - start_point[1]
-        length = math.sqrt(dx * dx + dy * dy)
-
-        # Normalize
-        if length > 0:
-            dx /= length
-            dy /= length
-
-        # Calculate perpendicular vector for width
-        perpx = -dy
-        perpy = dx
-
-        # Create polygon points for the segment
-        points = [
-            (
-                start_point[0] + perpx * rect_width / 2,
-                start_point[1] + perpy * rect_width / 2,
-            ),
-            (
-                start_point[0] - perpx * rect_width / 2,
-                start_point[1] - perpy * rect_width / 2,
-            ),
-            (
-                end_point[0] - perpx * rect_width / 2,
-                end_point[1] - perpy * rect_width / 2,
-            ),
-            (
-                end_point[0] + perpx * rect_width / 2,
-                end_point[1] + perpy * rect_width / 2,
-            ),
-        ]
-
-        # Draw filled rectangle
-        pygame.draw.polygon(self.screen, color, points)
-
-        # Draw border around rectangle
-        pygame.draw.polygon(self.screen, (0, 0, 0), points, 1)
-
-    def draw_curved_route(self, connection, parallel_shift=0, control_points=None):
-        # Get city objects and coordinates
-        city1_name, city2_name = connection.cities
-        city1 = next((city for city in self.cities if city.name == city1_name), None)
-        city2 = next((city for city in self.cities if city.name == city2_name), None)
-
-        if not city1 or not city2:
-            return  # Skip if cities not found
-
-        # Get points
-        start_point = city1.point
-        end_point = city2.point
-
-        # Calculate direction vector between cities (for offset)
-        dx = end_point[0] - start_point[0]
-        dy = end_point[1] - start_point[1]
-        distance = math.sqrt(dx * dx + dy * dy)
-        if distance > 0:
-            dx /= distance
-            dy /= distance
-
-        # Apply city offset to start and end points
-        city_offset = 15  # Same as in draw_route
-        city_radius = 5  # Match the circle radius used for cities
-        offset_distance = city_offset + city_radius
-        start_point = (
-            start_point[0] + dx * offset_distance,
-            start_point[1] + dy * offset_distance,
-        )
-        end_point = (
-            end_point[0] - dx * offset_distance,
-            end_point[1] - dy * offset_distance,
-        )
-
-        # Apply parallel shift for double routes if needed
-        if parallel_shift != 0:
-            # Calculate direction vectors
-            dx = end_point[0] - start_point[0]
-            dy = end_point[1] - start_point[1]
-            distance = math.sqrt(dx * dx + dy * dy)
-
-            if distance > 0:
-                dx /= distance
-                dy /= distance
-
-            perpx = -dy
-            perpy = dx
-
-            # Apply shift
-            start_point = (
-                start_point[0] + perpx * parallel_shift * 15,
-                start_point[1] + perpy * parallel_shift * 15,
-            )
-            end_point = (
-                end_point[0] + perpx * parallel_shift * 15,
-                end_point[1] + perpy * parallel_shift * 15,
-            )
-
-        # Use connection's control points if available
-        if connection.control_points:
-            control_points = connection.control_points
-
-        # Generate default control points if none provided
-        if not control_points:
-            # Default gentle curve - can be adjusted
-            dx = end_point[0] - start_point[0]
-            dy = end_point[1] - start_point[1]
-            dist = math.sqrt(dx * dx + dy * dy)
-
-            # Create perpendicular offset for control points
-            perpx = -dy / dist * dist * 0.3  # Adjust factor to control curve amount
-            perpy = dx / dist * dist * 0.3
-
-            # Two control points for cubic Bezier
-            control_points = [
-                (start_point[0] + dx / 3 + perpx, start_point[1] + dy / 3 + perpy),
-                (
-                    start_point[0] + dx * 2 / 3 + perpx,
-                    start_point[1] + dy * 2 / 3 + perpy,
-                ),
-            ]
-
-        # Generate points along the Bezier curve
-        num_steps = 100  # More steps = smoother curve
-        points = []
-        for i in range(num_steps + 1):
-            t = i / num_steps
-            # Cubic Bezier formula
-            x = (
-                (1 - t) ** 3 * start_point[0]
-                + 3 * (1 - t) ** 2 * t * control_points[0][0]
-                + 3 * (1 - t) * t**2 * control_points[1][0]
-                + t**3 * end_point[0]
-            )
-            y = (
-                (1 - t) ** 3 * start_point[1]
-                + 3 * (1 - t) ** 2 * t * control_points[0][1]
-                + 3 * (1 - t) * t**2 * control_points[1][1]
-                + t**3 * end_point[1]
-            )
-            points.append((x, y))
-
-        # Calculate total curve length
-        curve_length = 0
-        for i in range(len(points) - 1):
-            dx = points[i + 1][0] - points[i][0]
-            dy = points[i + 1][1] - points[i][1]
-            curve_length += math.sqrt(dx * dx + dy * dy)
-
-        # Draw train segments along the curve
-        cost_colors = connection.cost
-        rect_width = 10
-        # Make rectangles narrower on curves for clarity
-        curved_rect_width = rect_width * 0.8  # 20% narrower for curved segments
+        # leave the same city‐circle padding and gap logic
+        off = 15
         gap = 4
+        rect_w = 8
+        colors = [c.name.lower() for c in conn.cost]
+        n = len(colors)
+        if n == 0:
+            return
 
-        # Calculate segment placements
-        segment_length = (curve_length - gap * (len(cost_colors) - 1)) / len(
-            cost_colors
-        )
+        usable = dist - 2 * off - gap * (n - 1)
+        seg_len = usable / n
+        sx = x1 + dx * off
+        sy = y1 + dy * off
 
-        # Place segments along curve with improved spacing
-        segment_start_index = 0
-        distance_traveled = 0
-        for i in range(len(cost_colors)):
-            color_name = cost_colors[i]
-            color = self.color_map.get(color_name.lower(), (128, 128, 128))
+        # car‐inset factor (20% smaller than full segment)
+        inset = 0.2
 
-            # Calculate segment length (shorter for curved routes)
-            adjusted_segment_length = (
-                segment_length * 0.9
-            )  # Make segments slightly smaller on curves
+        for i, _ in enumerate(colors):
+            # center of this segment
+            center_x = sx + dx * (i * (seg_len + gap) + seg_len / 2)
+            center_y = sy + dy * (i * (seg_len + gap) + seg_len / 2)
 
-            # Find segment end based on distance
-            segment_end_distance = distance_traveled + adjusted_segment_length
-            segment_end_index = segment_start_index
-            segment_distance = 0
+            # full‐width segment corners
+            corners = [
+                (center_x - dx * seg_len / 2 + px * rect_w / 2,
+                 center_y - dy * seg_len / 2 + py * rect_w / 2),
+                (center_x - dx * seg_len / 2 - px * rect_w / 2,
+                 center_y - dy * seg_len / 2 - py * rect_w / 2),
+                (center_x + dx * seg_len / 2 - px * rect_w / 2,
+                 center_y + dy * seg_len / 2 - py * rect_w / 2),
+                (center_x + dx * seg_len / 2 + px * rect_w / 2,
+                 center_y + dy * seg_len / 2 + py * rect_w / 2),
+            ]
 
-            while (
-                segment_distance < adjusted_segment_length
-                and segment_end_index < len(points) - 1
-            ):
-                segment_end_index += 1
-                dx = points[segment_end_index][0] - points[segment_end_index - 1][0]
-                dy = points[segment_end_index][1] - points[segment_end_index - 1][1]
-                segment_distance += math.sqrt(dx * dx + dy * dy)
+            # inset each corner toward the center
+            car = []
+            for (cx, cy) in corners:
+                ix = center_x + (cx - center_x) * (1 - inset)
+                iy = center_y + (cy - center_y) * (1 - inset)
+                car.append((ix, iy))
+            player_color = self.player_colors.get(conn.claimed_by, (0, 0, 0))
 
-            # Draw the segment
-            self.draw_train_segment(
-                points[segment_start_index],
-                points[segment_end_index],
-                color_name,
-                curved_rect_width,
-            )
+            # draw the car
+            pygame.draw.polygon(self.screen, player_color, car)
+            pygame.draw.polygon(self.screen, (255, 255, 255), car, 2)
 
-            # Add gap before next segment
-            segment_start_index = (
-                segment_end_index + 3
-            )  # Skip some points to create a gap
-            distance_traveled = segment_end_distance + gap
+    def draw_routes(self):
+        grouped = {}
+        for conn in self.connections:
+            a, b = list(conn.cities)
+            key = tuple(sorted((a.name, b.name)))
+            grouped.setdefault(key, []).append(conn)
+
+        for conns in grouped.values():
+            for i, conn in enumerate(conns):
+                shift = 0 if len(conns)==1 else 0.2 * (-1 if i==0 else 1)
+                self.draw_route(conn, shift)
+                if conn.claimed_by is not None:
+                    col = self.player_colors[conn.claimed_by]
+                    self.draw_player_trains(conn, shift)
+
+
+    def draw_route(self, conn: CityConnection, parallel_shift=0):
+        # conn.cities to set{City, City}
+        a, b = list(conn.cities)
+        x1, y1 = self.scale_coordinates(*a.point)
+        x2, y2 = self.scale_coordinates(*b.point)
+        dx, dy = x2 - x1, y2 - y1
+        dist = math.hypot(dx, dy)
+        if dist == 0:
+            return
+        dx, dy = dx/dist, dy/dist
+        px, py = -dy, dx
+
+        colors = [c.name.lower() for c in conn.cost]
+        n = len(colors)
+        if n == 0:
+            return
+
+        # shift double‐route
+        if parallel_shift:
+            x1 += px*parallel_shift*25; y1+=py*parallel_shift*25
+            x2 += px*parallel_shift*25; y2+=py*parallel_shift*25
+            dx,dy = x2-x1, y2-y1; dist=math.hypot(dx,dy)
+            dx,dy = dx/dist,dy/dist
+
+        colors = [c.name.lower() for c in conn.cost]
+        seg_w, gap, off = 10, 4, 15
+        n = len(colors)
+        usable = dist - 2*off - gap*(n-1)
+        seg_len = usable/n
+        sx,sy = x1+dx*off, y1+dy*off
+
+        for i, col in enumerate(colors):
+            cx = sx + dx*(i*(seg_len+gap)+seg_len/2)
+            cy = sy + dy*(i*(seg_len+gap)+seg_len/2)
+            w,h = seg_len, seg_w
+            corners = [
+                (cx - dx*w/2 + px*h/2, cy - dy*w/2 + py*h/2),
+                (cx - dx*w/2 - px*h/2, cy - dy*w/2 - py*h/2),
+                (cx + dx*w/2 - px*h/2, cy + dy*w/2 - py*h/2),
+                (cx + dx*w/2 + px*h/2, cy + dy*w/2 + py*h/2),
+            ]
+            color = self.color_map.get(col, (128,128,128))
+            pygame.draw.polygon(self.screen, color, corners)
+            pygame.draw.polygon(self.screen, (0,0,0), corners,1)
 
     def draw_player_cards(self):
         player = self.game.players[self.game.current_player_index]
