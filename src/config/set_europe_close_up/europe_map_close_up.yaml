@@ -179,16 +179,71 @@ connections:
   - cities: [Sarajevo, Athens]
     cost: [green, green, green, green]
 
-
 tickets:
-  - cities: [Paris, Brest]
+ # Short routes (4-6 points)
+  - cities: [Amsterdam, Brussels]
+    points: 4
+
+  - cities: [Paris, Dieppe]
     points: 5
-  
-  - cities: [Brest, Palermo]
+
+  - cities: [Frankfurt, Essen]
+    points: 5
+
+  - cities: [Warsaw, Vilnius]
+    points: 6
+
+  - cities: [Budapest, Wien]
+    points: 4
+
+  # Medium routes (7-9 points)
+  - cities: [Madrid, Barcelona]
+    points: 7
+
+  - cities: [Berlin, Warsaw]
     points: 8
 
-  - cities: [Paris, Palermo]
-    points: 7 
+  - cities: [Munich, Venice]
+    points: 7
+
+  - cities: [Kyiv, Smolensk]
+    points: 8
+
+  - cities: [Sofia, Constantinople]
+    points: 9
+
+  # Long routes (10+ points)
+  - cities: [Edinburgh, London]
+    points: 10
+
+  - cities: [Moscow, Petersburg]
+    points: 12
+
+  - cities: [Madrid, Pamplona]
+    points: 11
+
+  - cities: [Rome, Athens]
+    points: 13
+
+  - cities: [Sevastopol, Constantinople]
+    points: 14
+
+  # Cross-continent challenges
+  - cities: [Brest, Marseille]
+    points: 15
+
+  - cities: [Danzig, Budapest]
+    points: 16
+
+  - cities: [London, Wien]
+    points: 18
+
+  - cities: [Paris, Kyiv]
+    points: 20
+
+  - cities: [Lisbon (hypothetical), Constantinople]
+    points: 25
+  
 
 cities:
   - name: Venice

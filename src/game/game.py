@@ -34,6 +34,7 @@ class Game:
         self.current_player_index = current_player_index
         self.turn_number = 0
         self.game_over = False
+        self.gui = None
 
     def __str__(self):
         players_str = "\n".join(str(player) for player in self.players)
@@ -62,12 +63,15 @@ class Game:
             player.train_cards = [self.train_cards_deck.draw_card() for _ in range(4)]
             self.draw_destination_tickets(player, 3, 2)
 
+            
+
     def play_game(self):
         """
         Play the game loop.
         """
         while not self.game_over:
             self.play_turn()
+            
             if self.if_start_last_round():
                 self.game_over = True
 
@@ -337,7 +341,7 @@ class Game:
             if ticket not in player.accomplished_destination_tickets
         ]
 
-    def play_turn(self):
+    def play_turn(self, terminal_mode: bool = False):
         """
         Plays a turn for the current player.
         """
@@ -349,35 +353,63 @@ class Game:
         move_made = False
 
         while not move_made:
+            
 
-            choice = int(
-                input(
-                    "Choose an action:\n 1. Draw train cards\n 2. Draw destination tickets\n 3. Claim a city connection\n"
+            action = self.gui.get_player_action()
+
+            print(action)
+
+            if terminal_mode:
+                choice = int(
+                    input(
+                        "Choose an action:\n 1. Draw train cards\n 2. Draw destination tickets\n 3. Claim a city connection\n"
+                    )
                 )
-            )
 
-            match choice:
-                case 1:
+                match choice:
+                    case 1:
 
+                        self.draw_card(player)
+                        move_made = True
+                    case 2:
+
+                        if self.draw_destination_tickets(player) != None:
+                            move_made = True
+
+                    case 3:
+
+                        conn = self.choose_conn(player)
+
+                        if conn != None and self.claim_conn(player, conn):
+                            move_made = True
+
+                        self.check_for_accomplished_tickets(player)
+                    
+                    case _:
+                        print("Invalid choice. Please try again.")
+                
+            else:
+
+                if action == "train_cards_deck":
                     self.draw_card(player)
-                    move_made = True
-                case 2:
+                elif action == "destination_tickets_deck":
+                    self.draw_destination_tickets(player)
+                elif type(action) == set:
+                    
+                    city1 = action.pop()
+                    city2 = action.pop()
+                    cities_connections = list(dict.fromkeys(city1.get_all_connections_between_cities(city2)))
 
-                    if self.draw_destination_tickets(player) != None:
-                        move_made = True
+                    if len(cities_connections) == 0:
+                        print("No connection exists between the chosen cities.")
+                        continue
+                    else:    
+                        conn = cities_connections[0]
+                        print(f"Chosen connection: {conn}")
 
-                case 3:
-
-                    conn = self.choose_conn(player)
-
-                    if conn != None and self.claim_conn(player, conn):
-                        move_made = True
-
-                    self.check_for_accomplished_tickets(player)
-                   
-                case _:
-                    print("Invalid choice. Please try again.")
-
+                        if self.claim_conn(player, conn):
+                            move_made = True
+                            self.check_for_accomplished_tickets(player)
 
         self.turn_number += 1
         self.current_player_index = (self.current_player_index + 1) % len(self.players)
@@ -422,6 +454,7 @@ def main():
     # Initialize GUI
     def run_gui():
         gui = GUI(game)
+        game.gui = gui
         gui.run()
 
     def run_game():
@@ -431,29 +464,22 @@ def main():
     gui_thread = Thread(target=run_gui)
     gui_thread.start()
 
-
-
     # Setup game for players
     game.setup_game()
 
     for player in game.players:
         print(player)
 
-        
+    player = game.players[0]
+    
+    player.train_cards.extend(
+        [TrainCard.BLUE, TrainCard.BLACK] * 5
+        + [TrainCard.LOCOMOTIVE] * 2
+        + [TrainCard.GREEN] * 4
+        + [TrainCard.PINK] * 4
+    )
     # Run the game logic in the main thread
     run_game()
-
-    for city in game.map.cities:
-        
-        for conn in city.connections:
-
-            game.claim_conn(game.players[0], conn)
-
-    game.check_for_accomplished_tickets(game.players[0])
-    print(game.players[0].score)
-
-    longest_route = game.players[0].get_longest_route()  
-    print(f"Longest route: {longest_route}")
 
 if __name__ == "__main__":
     main()

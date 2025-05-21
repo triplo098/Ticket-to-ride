@@ -3,7 +3,7 @@ import math
 from pathlib import Path
 import os
 
-from src.game.map import CityConnection
+from map import CityConnection
 
 
 class GUI:
@@ -48,8 +48,10 @@ class GUI:
 
         # Player color mapping (assign distinct colors)
         base_player_colors = [(255, 0, 0), (0, 0, 255), (0, 128, 0), (255, 165, 0)]
-        self.player_colors = {player: base_player_colors[i % len(base_player_colors)]
-                              for i, player in enumerate(self.game.players)}
+        self.player_colors = {
+            player: base_player_colors[i % len(base_player_colors)]
+            for i, player in enumerate(self.game.players)
+        }
 
         # Load map data from YAML file
         script_dir = Path(__file__).resolve().parent
@@ -147,19 +149,27 @@ class GUI:
 
             # full‐width segment corners
             corners = [
-                (center_x - dx * seg_len / 2 + px * rect_w / 2,
-                 center_y - dy * seg_len / 2 + py * rect_w / 2),
-                (center_x - dx * seg_len / 2 - px * rect_w / 2,
-                 center_y - dy * seg_len / 2 - py * rect_w / 2),
-                (center_x + dx * seg_len / 2 - px * rect_w / 2,
-                 center_y + dy * seg_len / 2 - py * rect_w / 2),
-                (center_x + dx * seg_len / 2 + px * rect_w / 2,
-                 center_y + dy * seg_len / 2 + py * rect_w / 2),
+                (
+                    center_x - dx * seg_len / 2 + px * rect_w / 2,
+                    center_y - dy * seg_len / 2 + py * rect_w / 2,
+                ),
+                (
+                    center_x - dx * seg_len / 2 - px * rect_w / 2,
+                    center_y - dy * seg_len / 2 - py * rect_w / 2,
+                ),
+                (
+                    center_x + dx * seg_len / 2 - px * rect_w / 2,
+                    center_y + dy * seg_len / 2 - py * rect_w / 2,
+                ),
+                (
+                    center_x + dx * seg_len / 2 + px * rect_w / 2,
+                    center_y + dy * seg_len / 2 + py * rect_w / 2,
+                ),
             ]
 
             # inset each corner toward the center
             car = []
-            for (cx, cy) in corners:
+            for cx, cy in corners:
                 ix = center_x + (cx - center_x) * (1 - inset)
                 iy = center_y + (cy - center_y) * (1 - inset)
                 car.append((ix, iy))
@@ -178,12 +188,11 @@ class GUI:
 
         for conns in grouped.values():
             for i, conn in enumerate(conns):
-                shift = 0 if len(conns)==1 else 0.2 * (-1 if i==0 else 1)
+                shift = 0 if len(conns) == 1 else 0.2 * (-1 if i == 0 else 1)
                 self.draw_route(conn, shift)
                 if conn.claimed_by is not None:
                     col = self.player_colors[conn.claimed_by]
                     self.draw_player_trains(conn, shift)
-
 
     def draw_route(self, conn: CityConnection, parallel_shift=0):
         # conn.cities to set{City, City}
@@ -194,7 +203,7 @@ class GUI:
         dist = math.hypot(dx, dy)
         if dist == 0:
             return
-        dx, dy = dx/dist, dy/dist
+        dx, dy = dx / dist, dy / dist
         px, py = -dy, dx
 
         colors = [c.name.lower() for c in conn.cost]
@@ -204,31 +213,34 @@ class GUI:
 
         # shift double‐route
         if parallel_shift:
-            x1 += px*parallel_shift*25; y1+=py*parallel_shift*25
-            x2 += px*parallel_shift*25; y2+=py*parallel_shift*25
-            dx,dy = x2-x1, y2-y1; dist=math.hypot(dx,dy)
-            dx,dy = dx/dist,dy/dist
+            x1 += px * parallel_shift * 25
+            y1 += py * parallel_shift * 25
+            x2 += px * parallel_shift * 25
+            y2 += py * parallel_shift * 25
+            dx, dy = x2 - x1, y2 - y1
+            dist = math.hypot(dx, dy)
+            dx, dy = dx / dist, dy / dist
 
         colors = [c.name.lower() for c in conn.cost]
         seg_w, gap, off = 10, 4, 15
         n = len(colors)
-        usable = dist - 2*off - gap*(n-1)
-        seg_len = usable/n
-        sx,sy = x1+dx*off, y1+dy*off
+        usable = dist - 2 * off - gap * (n - 1)
+        seg_len = usable / n
+        sx, sy = x1 + dx * off, y1 + dy * off
 
         for i, col in enumerate(colors):
-            cx = sx + dx*(i*(seg_len+gap)+seg_len/2)
-            cy = sy + dy*(i*(seg_len+gap)+seg_len/2)
-            w,h = seg_len, seg_w
+            cx = sx + dx * (i * (seg_len + gap) + seg_len / 2)
+            cy = sy + dy * (i * (seg_len + gap) + seg_len / 2)
+            w, h = seg_len, seg_w
             corners = [
-                (cx - dx*w/2 + px*h/2, cy - dy*w/2 + py*h/2),
-                (cx - dx*w/2 - px*h/2, cy - dy*w/2 - py*h/2),
-                (cx + dx*w/2 - px*h/2, cy + dy*w/2 - py*h/2),
-                (cx + dx*w/2 + px*h/2, cy + dy*w/2 + py*h/2),
+                (cx - dx * w / 2 + px * h / 2, cy - dy * w / 2 + py * h / 2),
+                (cx - dx * w / 2 - px * h / 2, cy - dy * w / 2 - py * h / 2),
+                (cx + dx * w / 2 - px * h / 2, cy + dy * w / 2 - py * h / 2),
+                (cx + dx * w / 2 + px * h / 2, cy + dy * w / 2 + py * h / 2),
             ]
-            color = self.color_map.get(col, (128,128,128))
+            color = self.color_map.get(col, (128, 128, 128))
             pygame.draw.polygon(self.screen, color, corners)
-            pygame.draw.polygon(self.screen, (0,0,0), corners,1)
+            pygame.draw.polygon(self.screen, (0, 0, 0), corners, 1)
 
     def draw_player_cards(self):
         player = self.game.players[self.game.current_player_index]
@@ -295,8 +307,12 @@ class GUI:
             card_height = int(card_width * (1200 / 1900))  # Maintain aspect ratio
 
             # Calculate card position dynamically based on screen size
-            x = current_width * self.game.open_cards_deck.screen_position[0] + i * (card_width + current_width * 0.01)
-            y = current_height * self.game.open_cards_deck.screen_position[1]  # Place near the top of the screen
+            x = current_width * self.game.open_cards_deck.screen_position[0] + i * (
+                card_width + current_width * 0.01
+            )
+            y = (
+                current_height * self.game.open_cards_deck.screen_position[1]
+            )  # Place near the top of the screen
 
             # Construct the file path for the card image
             card_image_path = os.path.join(
@@ -345,22 +361,18 @@ class GUI:
         card_height = int(card_width * (1200 / 1900))  # Maintain aspect ratio
 
         # Calculate card position dynamically based on screen size
-        x = current_width * self.game.train_cards_deck.screen_position[0] 
+        x = current_width * self.game.train_cards_deck.screen_position[0]
         y = current_height * self.game.train_cards_deck.screen_position[1]
 
         # Construct the file path for the card image
-        card_image_path = os.path.join(
-            self.cards_folder_path, "train_ticket_card.jpg"
-        )
+        card_image_path = os.path.join(self.cards_folder_path, "train_ticket_card.jpg")
 
         try:
             # Load the card image
             card_image = pygame.image.load(card_image_path)
 
             # Scale the card image to fit the dynamically calculated dimensions
-            card_image = pygame.transform.scale(
-                card_image, (card_width, card_height)
-            )
+            card_image = pygame.transform.scale(card_image, (card_width, card_height))
 
             # Draw the card image on the screen
             self.screen.blit(card_image, (x, y))
@@ -371,9 +383,7 @@ class GUI:
             pygame.draw.rect(
                 self.screen, (255, 255, 255), (x, y, card_width, card_height)
             )
-            pygame.draw.rect(
-                self.screen, (0, 0, 0), (x, y, card_width, card_height), 1
-            )
+            pygame.draw.rect(self.screen, (0, 0, 0), (x, y, card_width, card_height), 1)
 
         # Draw the label "Trains Deck" above the trains deck
         font = pygame.font.Font(None, 36)  # Use a larger font size for the label
@@ -395,16 +405,14 @@ class GUI:
 
         x = current_width * self.game.destination_tickets_deck.screen_position[0]
         y = current_height * self.game.destination_tickets_deck.screen_position[1]
-        
+
         card_image_path = os.path.join(
             self.cards_folder_path, "destination_ticket_card.jpg"
         )
         # Load the card image
         card_image = pygame.image.load(card_image_path)
         # Scale the card image to fit the dynamically calculated dimensions
-        card_image = pygame.transform.scale(
-            card_image, (card_width, card_height)
-        )
+        card_image = pygame.transform.scale(card_image, (card_width, card_height))
         # Draw the card image on the screen
         self.screen.blit(card_image, (x, y))
         # Draw the label "Destination Cards" above the destination cards
@@ -419,7 +427,6 @@ class GUI:
         )
         self.screen.blit(text, text_rect)
 
-
     def get_scaling_factor(self):
         # Calculate the scaling factor based on the current screen size.
         current_width, current_height = self.screen.get_size()
@@ -433,9 +440,9 @@ class GUI:
         return int(x * scale_x), int(y * scale_y)
 
     def get_clicked_city(self, event):
-        '''
+        """
         Check if a city was clicked based on the mouse event.
-        '''
+        """
         for city in self.cities:
             # Scale city coordinates
             city_point = self.scale_coordinates(*city.point)
@@ -444,26 +451,28 @@ class GUI:
             )
             if city_rect.collidepoint(event.pos):
                 return city
-            
+
     def get_open_card_index(self, event):
-        '''
+        """
         Check if an open card was clicked based on the mouse event.
-        '''
+        """
         current_width, current_height = self.screen.get_size()
         card_width = int(current_width * 0.06)
         card_height = int(card_width * (1200 / 1900))
         for i, card in enumerate(self.game.open_cards_deck.cards):
-            x = current_width * self.game.open_cards_deck.screen_position[0] + i * (card_width + current_width * 0.01)
+            x = current_width * self.game.open_cards_deck.screen_position[0] + i * (
+                card_width + current_width * 0.01
+            )
             y = current_height * self.game.open_cards_deck.screen_position[1]
             card_rect = pygame.Rect(x, y, card_width, card_height)
             if card_rect.collidepoint(event.pos):
                 return i
         return None
-    
+
     def get_if_train_cards_clicked(self, event):
-        '''
+        """
         Check if an open card was clicked based on the mouse event.
-        '''
+        """
         current_width, current_height = self.screen.get_size()
         card_width = int(current_width * 0.06)
         card_height = int(card_width * (1200 / 1900))
@@ -475,9 +484,9 @@ class GUI:
         return False
 
     def destination_tickets_clicked(self, event):
-        '''
+        """
         Check if the destination tickets deck was clicked based on the mouse event.
-        '''
+        """
         current_width, current_height = self.screen.get_size()
         card_width = int(current_width * 0.06)
         card_height = int(card_width * (1200 / 1900))
@@ -487,37 +496,65 @@ class GUI:
         if card_rect.collidepoint(event.pos):
             return True
         return False
-    
 
-    def run(self):
-        running = True
-        while running:
+    def get_player_action(self):
+
+        clicked_cities = set()
+        while True:
+
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
                 elif event.type == pygame.MOUSEBUTTONDOWN:
-                    
-                    
+
                     city = self.get_clicked_city(event)
                     if city:
-                        print(f"Clicked on city: {city.name}")
-                    
-
+                        if city not in clicked_cities:
+                            clicked_cities.add(city)
+                            print(f"Clicked on city: {city.name}")
+                        
+                            if len(clicked_cities) == 2:
+                                return clicked_cities
+                            
+                        continue
 
                     open_card_index = self.get_open_card_index(event)
                     if open_card_index is not None:
                         card = self.game.open_cards_deck.cards[open_card_index]
                         print(f"Clicked on open card: {open_card_index} - {card.name}")
-
+                        return card, open_card_index
 
                     if self.get_if_train_cards_clicked(event):
                         print("Clicked on train cards deck.")
-
+                        return "train_cards_deck"
 
                     if self.destination_tickets_clicked(event):
                         print("Clicked on destination tickets deck.")
+                        return "destination_tickets_deck"
 
+    def run(self):
 
+        running = True
+        while running:
+            # for event in pygame.event.get():
+            #     if event.type == pygame.QUIT:
+            #         running = False
+            #     elif event.type == pygame.MOUSEBUTTONDOWN:
+
+                    # city = self.get_clicked_city(event)
+                    # if city:
+                    #     print(f"Clicked on city: {city.name}")
+
+                    # open_card_index = self.get_open_card_index(event)
+                    # if open_card_index is not None:
+                    #     card = self.game.open_cards_deck.cards[open_card_index]
+                    #     print(f"Clicked on open card: {open_card_index} - {card.name}")
+
+                    # if self.get_if_train_cards_clicked(event):
+                    #     print("Clicked on train cards deck.")
+
+                    # if self.destination_tickets_clicked(event):
+                    #     print("Clicked on destination tickets deck.")
 
             self.draw()
             pygame.display.flip()
