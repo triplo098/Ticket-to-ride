@@ -522,7 +522,7 @@ class GUI:
                     if open_card_index is not None:
                         card = self.game.open_cards_deck.cards[open_card_index]
                         print(f"Clicked on open card: {open_card_index} - {card.name}")
-                        return card, open_card_index
+                        return open_card_index
 
                     if self.get_if_train_cards_clicked(event):
                         print("Clicked on train cards deck.")

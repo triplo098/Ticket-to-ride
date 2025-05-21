@@ -10,6 +10,7 @@ from cards import (
 from player import Player
 from gui import GUI
 from threading import Thread
+import time
 
 
 class Game:
@@ -351,6 +352,7 @@ class Game:
         print(f"Player: {player}")
 
         move_made = False
+        draw_cards = list()
 
         while not move_made:
             
@@ -390,12 +392,21 @@ class Game:
                 
             else:
 
-                if action == "train_cards_deck":
-                    self.draw_card(player)
-                elif action == "destination_tickets_deck":
-                    self.draw_destination_tickets(player)
-                elif type(action) == set:
+                if action == "train_cards_deck":  
+                    card = self.train_cards_deck.draw_card()
+                    player.train_cards.append(card)
+
+                    draw_cards.append(card)
                     
+                    if len(draw_cards) == 2:
+                        
+                        move_made = True
+
+                elif action == "destination_tickets_deck":
+                    pass
+                elif type(action) == set:
+                    # creating connection from set of selected cities
+
                     city1 = action.pop()
                     city2 = action.pop()
                     cities_connections = list(dict.fromkeys(city1.get_all_connections_between_cities(city2)))
@@ -410,7 +421,37 @@ class Game:
                         if self.claim_conn(player, conn):
                             move_made = True
                             self.check_for_accomplished_tickets(player)
+                elif type(action) == int:
+                    # assuming action is the index of the open card
 
+                    index = action
+                    if index < 0 or index >= len(self.open_cards_deck.cards):
+                        print("Invalid index. Please try again.")
+                        continue
+                    if (
+                        self.open_cards_deck.cards[index] == TrainCard.LOCOMOTIVE
+                        and len(draw_cards) == 1
+                    ):
+                        print(
+                            "You cannot draw a locomotive card from the open cards after drawing one."
+                        )
+                        continue
+
+                    card = self.open_cards_deck.draw_card(index)
+                    player.train_cards.append(card)
+                    self.open_cards_deck.add_card(self.train_cards_deck.draw_card())
+
+                    draw_cards.append(card)
+
+                    if len(draw_cards) == 2:
+                        
+                        move_made = True
+                    elif card  == TrainCard.LOCOMOTIVE:
+                        
+                        move_made = True
+
+
+        time.sleep(1)
         self.turn_number += 1
         self.current_player_index = (self.current_player_index + 1) % len(self.players)
 
@@ -470,14 +511,14 @@ def main():
     for player in game.players:
         print(player)
 
-    player = game.players[0]
+    # player = game.players[0]
     
-    player.train_cards.extend(
-        [TrainCard.BLUE, TrainCard.BLACK] * 5
-        + [TrainCard.LOCOMOTIVE] * 2
-        + [TrainCard.GREEN] * 4
-        + [TrainCard.PINK] * 4
-    )
+    # player.train_cards.extend(
+    #     [TrainCard.BLUE, TrainCard.BLACK] * 5
+    #     + [TrainCard.LOCOMOTIVE] * 2
+    #     + [TrainCard.GREEN] * 4
+    #     + [TrainCard.PINK] * 4
+    # )
     # Run the game logic in the main thread
     run_game()
 
