@@ -36,6 +36,7 @@ class Game:
         self.turn_number = 0
         self.game_over = False
         self.gui = None
+        self.destination_tickets_to_choose = []
 
     def __str__(self):
         players_str = "\n".join(str(player) for player in self.players)
@@ -63,6 +64,8 @@ class Game:
             print(f"Drawing initial cards for {player.name}...")
             player.train_cards = [self.train_cards_deck.draw_card() for _ in range(4)]
             self.draw_destination_tickets(player, 3, 2)
+            self.turn_number += 1
+            self.current_player_index = (self.current_player_index + 1) % len(self.players)
 
             
 
@@ -70,6 +73,8 @@ class Game:
         """
         Play the game loop.
         """
+        self.setup_game()
+
         while not self.game_over:
             self.play_turn()
             
@@ -138,7 +143,7 @@ class Game:
                     print("Invalid choice. Please try again.")
 
     def draw_destination_tickets(
-        self, player: Player, num_tickets: int = 3, need_to_take: int = 1
+        self, player: Player, num_tickets: int = 3, need_to_take: int = 1, terminal_mode: bool = False
     ):
         """
         Drawing destination tickets from deck.
@@ -157,7 +162,14 @@ class Game:
         for ticket in temp_cards:
             print(f" - {ticket}")
 
-        choice = input("Do you want to keep all of the drawn tickets? (y/n): ")
+
+        self.destination_tickets_to_choose = temp_cards
+        self.gui.if_draw_destination_tickets_to_choose = True
+
+        if terminal_mode:
+            choice = input("Do you want to keep all of the drawn tickets? (y/n): ")
+        else:
+            choice = "n"
 
         if choice.lower() == "y":
             player.destination_tickets.extend(temp_cards[:])
@@ -174,13 +186,26 @@ class Game:
                 tickets_for_taking = []
 
                 for i, ticket in enumerate(temp_cards[:]):
-                    print(f"{i}. {ticket}")
 
-                    choice = input(f"Do you want to keep this ticket? (y/n): ")
-                    if choice.lower() == "y":
+                    if terminal_mode:   
+                        print(f"{i}. {ticket}")
+                        choice = input(f"Do you want to keep this ticket? (y/n): ")
+                        if choice.lower() == "y":
+                            tickets_for_taking.append(ticket)
+                            taken_cards_counter += 1
+                
+                    destination_ticket_index, action_name = self.gui.get_player_action()
+                    
+                    if type(destination_ticket_index) == int:
+                        ticket = self.destination_tickets_to_choose[destination_ticket_index]
+                        if ticket in tickets_for_taking:
+                            break
 
+                        print(f"Chosen ticket: {ticket}")
                         tickets_for_taking.append(ticket)
+
                         taken_cards_counter += 1
+
 
             player.destination_tickets.extend(tickets_for_taking)
 
@@ -189,7 +214,10 @@ class Game:
             for card in tickets_for_returing:
                 self.destination_tickets_deck.add_card_to_bottom(card)
 
+            # Returning the rest of the tickets to the deck and setting gui flag to False
+            self.gui.if_draw_destination_tickets_to_choose = False
             return tickets_for_taking
+        
 
     def choose_conn(self, player: Player):
         """
@@ -358,7 +386,7 @@ class Game:
             
 
             action = self.gui.get_player_action()
-
+            time.sleep(1)
             print(action)
 
             if terminal_mode:
@@ -392,7 +420,9 @@ class Game:
                 
             else:
 
-                if action == "train_cards_deck":  
+                if action == "train_cards_deck": 
+                    # drawing from the deck
+                     
                     card = self.train_cards_deck.draw_card()
                     player.train_cards.append(card)
 
@@ -403,12 +433,14 @@ class Game:
                         move_made = True
 
                 elif action == "destination_tickets_deck":
-                    pass
-                elif type(action) == set:
+                    self.draw_destination_tickets(player, 3, 1)
+                    move_made = True
+                elif action[1] == "create_connection":
                     # creating connection from set of selected cities
+                    cities = action[0]
+                    city1 = cities.pop()
+                    city2 = cities.pop()
 
-                    city1 = action.pop()
-                    city2 = action.pop()
                     cities_connections = list(dict.fromkeys(city1.get_all_connections_between_cities(city2)))
 
                     if len(cities_connections) == 0:
@@ -421,10 +453,11 @@ class Game:
                         if self.claim_conn(player, conn):
                             move_made = True
                             self.check_for_accomplished_tickets(player)
-                elif type(action) == int:
+
+                elif action[1] == "open_card_index":
                     # assuming action is the index of the open card
 
-                    index = action
+                    index = action[0]
                     if index < 0 or index >= len(self.open_cards_deck.cards):
                         print("Invalid index. Please try again.")
                         continue
@@ -443,13 +476,9 @@ class Game:
 
                     draw_cards.append(card)
 
-                    if len(draw_cards) == 2:
-                        
+                    if len(draw_cards) == 2 or card  == TrainCard.LOCOMOTIVE:
                         move_made = True
-                    elif card  == TrainCard.LOCOMOTIVE:
-                        
-                        move_made = True
-
+                    
 
         time.sleep(1)
         self.turn_number += 1
@@ -505,9 +534,6 @@ def main():
     gui_thread = Thread(target=run_gui)
     gui_thread.start()
 
-    # Setup game for players
-    game.setup_game()
-
     for player in game.players:
         print(player)
 
@@ -520,6 +546,7 @@ def main():
     #     + [TrainCard.PINK] * 4
     # )
     # Run the game logic in the main thread
+    time.sleep(1)
     run_game()
 
 if __name__ == "__main__":

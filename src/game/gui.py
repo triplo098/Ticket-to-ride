@@ -4,6 +4,7 @@ from pathlib import Path
 import os
 
 from map import CityConnection
+from cards import DestinationTicketCard
 
 
 class GUI:
@@ -14,12 +15,14 @@ class GUI:
     ):
         self.game = game
         # Use the RESIZABLE flag to allow window resizing
-        self.screen = pygame.display.set_mode((1050, 578), pygame.RESIZABLE)
+        self.screen = pygame.display.set_mode((1600, 800), pygame.RESIZABLE)
         pygame.display.set_caption("Ticket to Ride")
         pygame.font.init()  # Initialize the font module
 
         self.cities = self.game.map.cities
         self.connections = self.game.map.connections
+
+        self.if_draw_destination_tickets_to_choose = False
 
         self.clock = pygame.time.Clock()
 
@@ -91,9 +94,13 @@ class GUI:
             self.screen.blit(text_surf, pos)
 
         self.draw_player_cards()
+        self.draw_player_tickets()
         self.draw_open_cards()
         self.draw_trains_deck()
         self.draw_destination_cards()
+
+        if self.if_draw_destination_tickets_to_choose:
+            self.draw_destination_tickets_to_choose()
 
     def draw_player_trains(self, conn: CityConnection, parallel_shift=0):
         """Draw small train‐car rectangles on *this* route, with the same shift."""
@@ -296,6 +303,28 @@ class GUI:
         )
         self.screen.blit(text, text_rect)
 
+    def draw_player_tickets(self):
+        player = self.game.players[self.game.current_player_index]
+        # Draw player tickets
+        for i, ticket in enumerate(player.destination_tickets + player.accomplished_destination_tickets):
+            # Calculate dynamic card size based on window dimensions
+            current_width, current_height = self.screen.get_size()
+            card_width = int(current_width * 0.06)
+            card_height = int(card_width * (1200 / 1900))  # Maintain aspect ratio
+            # Calculate card position dynamically based on screen size
+            x = current_width * 0.05 + i * (current_width * 0.05)  # 5% margin + spacing
+            y = current_height * 0.15  # Place near the bottom of the screen
+
+            image = self.create_image_from_ticket(ticket)
+            # Scale the card image to fit the dynamically calculated dimensions
+            image = pygame.transform.scale(image, (card_width, card_height))
+            # Draw the card image on the screen
+            self.screen.blit(image, (x, y))
+            # Draw the label "Destination Tickets" above the destination tickets
+            font = pygame.font.Font(None, 16)  # Use a larger font size for the label
+            label_text = "Destination Tickets"
+            text = font.render(label_text, True, (0, 0, 0))  # Render the label in black
+
     def draw_open_cards(self):
         # Draw open cards deck on the upper part of the screen
         open_cards = self.game.open_cards_deck.cards
@@ -427,6 +456,71 @@ class GUI:
         )
         self.screen.blit(text, text_rect)
 
+    def draw_destination_tickets_to_choose(self):
+        # Draw destination tickets to choose from
+        current_width, current_height = self.screen.get_size()
+        card_width = int(current_width * 0.06)
+        card_height = int(card_width * (1200 / 1900))
+        spacing = int(current_width * 0.02)  # Add spacing between cards
+
+        for i, card in enumerate(self.game.destination_tickets_to_choose):
+            # Calculate card position dynamically based on screen size
+            x = current_width * 0.7 + i * (card_width + spacing)
+            y = current_height * 0.7  # Place near the bottom of the screen
+            # Construct the file path for the card image
+
+            image = self.create_image_from_ticket(card)
+            # Scale the card image to fit the dynamically calculated dimensions
+            image = pygame.transform.scale(image, (card_width, card_height))
+            # Draw the card image on the screen
+            self.screen.blit(image, (x, y))
+            # Draw the label "Destination Tickets" above the destination tickets
+            font = pygame.font.Font(None, 16)  # Use a larger font size for the label
+            label_text = "Destination Tickets"
+            text = font.render(label_text, True, (0, 0, 0))  # Render the label in black
+
+    def create_image_from_ticket(self, ticket):
+
+        # Create an image from the destination ticket
+        current_width, current_height = self.screen.get_size()
+        card_width = int(current_width * 0.06)
+        card_height = int(card_width * (1200 / 1900))
+
+        # Create a blank surface for the ticket
+        ticket_surface = pygame.Surface((card_width, card_height))
+        ticket_surface.fill((255, 255, 255))
+
+        # Draw the ticket details on the surface
+        font_size = int(card_width * 0.15)  # Adjust font size relative to card width
+        font = pygame.font.Font(None, font_size)
+        text = f"{ticket.start_city} - {ticket.end_city}"
+        text_surface = font.render(text, True, (0, 0, 0))
+        text_rect = text_surface.get_rect(center=(card_width // 2, card_height // 3))
+        ticket_surface.blit(text_surface, text_rect)
+
+        # Draw the number of points on the surface
+        points_text = f"Points: {ticket.points}"
+        points_surface = font.render(points_text, True, (0, 0, 0))
+        points_rect = points_surface.get_rect(
+            center=(card_width // 2, 2 * card_height // 3)
+        )
+        ticket_surface.blit(points_surface, points_rect)
+
+        # Check if the ticket is accomplished
+        if ticket in self.game.players[self.game.current_player_index].accomplished_destination_tickets:
+            # Add a green frame if accomplished
+            pygame.draw.rect(ticket_surface, (0, 255, 0), ticket_surface.get_rect(), 5)
+        else:
+            # Add a black frame if not accomplished
+            pygame.draw.rect(ticket_surface, (0, 0, 0), ticket_surface.get_rect(), 5)
+
+        return ticket_surface
+
+    def set_destination_tickets_to_choose(self, tickets: list[DestinationTicketCard]):
+
+        # Set the destination tickets to choose from
+        self.game.destination_tickets_to_choose = tickets
+
     def get_scaling_factor(self):
         # Calculate the scaling factor based on the current screen size.
         current_width, current_height = self.screen.get_size()
@@ -469,6 +563,23 @@ class GUI:
                 return i
         return None
 
+    def get_destination_tickets_to_choose_index(self, event):
+        """
+        Check if a destination ticket was clicked based on the mouse event.
+        """
+        current_width, current_height = self.screen.get_size()
+        card_width = int(current_width * 0.06)
+        card_height = int(card_width * (1200 / 1900))
+        spacing = int(current_width * 0.02)  # Add spacing between cards
+
+        for i, card in enumerate(self.game.destination_tickets_to_choose):
+            x = current_width * 0.7 + i * (card_width + spacing)
+            y = current_height * 0.7
+            card_rect = pygame.Rect(x, y, card_width, card_height)
+            if card_rect.collidepoint(event.pos):
+                return i
+        return None
+
     def get_if_train_cards_clicked(self, event):
         """
         Check if an open card was clicked based on the mouse event.
@@ -504,7 +615,7 @@ class GUI:
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    running = False
+                    running = Falsecities[1]
                 elif event.type == pygame.MOUSEBUTTONDOWN:
 
                     city = self.get_clicked_city(event)
@@ -512,17 +623,18 @@ class GUI:
                         if city not in clicked_cities:
                             clicked_cities.add(city)
                             print(f"Clicked on city: {city.name}")
-                        
+
                             if len(clicked_cities) == 2:
-                                return clicked_cities
-                            
+                                return clicked_cities, "create_connection"
+
                         continue
 
                     open_card_index = self.get_open_card_index(event)
+
                     if open_card_index is not None:
                         card = self.game.open_cards_deck.cards[open_card_index]
                         print(f"Clicked on open card: {open_card_index} - {card.name}")
-                        return open_card_index
+                        return open_card_index, "open_card_index"
 
                     if self.get_if_train_cards_clicked(event):
                         print("Clicked on train cards deck.")
@@ -531,6 +643,20 @@ class GUI:
                     if self.destination_tickets_clicked(event):
                         print("Clicked on destination tickets deck.")
                         return "destination_tickets_deck"
+
+                    destination_ticket_index = (
+                        self.get_destination_tickets_to_choose_index(event)
+                    )
+                    if (
+                        destination_ticket_index is not None
+                        and self.if_draw_destination_tickets_to_choose
+                    ):
+                        print(
+                            f"Clicked on destination ticket: {destination_ticket_index}"
+                        )
+                        return destination_ticket_index, "destination_ticket_index"
+
+                    return None, "skip"
 
     def run(self):
 
@@ -541,20 +667,20 @@ class GUI:
             #         running = False
             #     elif event.type == pygame.MOUSEBUTTONDOWN:
 
-                    # city = self.get_clicked_city(event)
-                    # if city:
-                    #     print(f"Clicked on city: {city.name}")
+            # city = self.get_clicked_city(event)
+            # if city:
+            #     print(f"Clicked on city: {city.name}")
 
-                    # open_card_index = self.get_open_card_index(event)
-                    # if open_card_index is not None:
-                    #     card = self.game.open_cards_deck.cards[open_card_index]
-                    #     print(f"Clicked on open card: {open_card_index} - {card.name}")
+            # open_card_index = self.get_open_card_index(event)
+            # if open_card_index is not None:
+            #     card = self.game.open_cards_deck.cards[open_card_index]
+            #     print(f"Clicked on open card: {open_card_index} - {card.name}")
 
-                    # if self.get_if_train_cards_clicked(event):
-                    #     print("Clicked on train cards deck.")
+            # if self.get_if_train_cards_clicked(event):
+            #     print("Clicked on train cards deck.")
 
-                    # if self.destination_tickets_clicked(event):
-                    #     print("Clicked on destination tickets deck.")
+            # if self.destination_tickets_clicked(event):
+            #     print("Clicked on destination tickets deck.")
 
             self.draw()
             pygame.display.flip()
