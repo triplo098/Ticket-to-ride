@@ -15,12 +15,18 @@ class GUI:
     ):
         self.game = game
         # Use the RESIZABLE flag to allow window resizing
-        self.screen = pygame.display.set_mode((1600, 800), pygame.RESIZABLE)
+        # self.screen = pygame.display.set_mode((1600, 800), pygame.RESIZABLE)
+        self.screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
         pygame.display.set_caption("Ticket to Ride")
         pygame.font.init()  # Initialize the font module
 
         self.cities = self.game.map.cities
         self.connections = self.game.map.connections
+
+        self.if_draw_destination_tickets_to_choose = False
+        self.parallel_choice_mode = False
+        self.parallel_conns = []
+        self.parallel_rects = [None, None]
 
         self.if_draw_destination_tickets_to_choose = False
 
@@ -70,9 +76,57 @@ class GUI:
         scaled_bg = pygame.transform.scale(bg_img, self.screen.get_size())
         self.screen.blit(scaled_bg, (0, 0))
 
+        if self.parallel_choice_mode:
+            current_w, current_h = self.screen.get_size()
+
+            rect_w = int(current_w * 0.4)
+            rect_h = int(current_h * 0.15)
+
+            x1 = int(current_w * 0.05)
+            y1 = int(current_h * 0.80)
+
+            spacing = int(current_w * 0.05)
+            x2 = x1 + rect_w + spacing
+            y2 = y1
+
+            self.parallel_rects[0] = pygame.Rect(x1, y1, rect_w, rect_h)
+            self.parallel_rects[1] = pygame.Rect(x2, y2, rect_w, rect_h)
+
+            conn0 = self.parallel_conns[0]
+            conn1 = self.parallel_conns[1]
+
+            col0 = self.color_map.get(conn0.cost[0].name.lower(), (128, 128, 128))
+            col1 = self.color_map.get(conn1.cost[0].name.lower(), (128, 128, 128))
+
+            pygame.draw.rect(self.screen, col0, self.parallel_rects[0])
+            pygame.draw.rect(self.screen, col1, self.parallel_rects[1])
+
+            pygame.draw.rect(self.screen, (0, 0, 0), self.parallel_rects[0], 3)
+            pygame.draw.rect(self.screen, (0, 0, 0), self.parallel_rects[1], 3)
+
+            font = pygame.font.Font(None, 28)
+
+            cityA0, cityB0 = list(conn0.cities)
+            cityA1, cityB1 = list(conn1.cities)
+
+            text0 = f"{cityA0.name} – {cityB0.name}"
+            text1 = f"{cityA1.name} – {cityB1.name}"
+
+            surf0 = font.render(text0, True, (0, 0, 0))
+            surf1 = font.render(text1, True, (0, 0, 0))
+
+            rect0_center = self.parallel_rects[0].center
+            rect1_center = self.parallel_rects[1].center
+            text0_rect = surf0.get_rect(center=rect0_center)
+            text1_rect = surf1.get_rect(center=rect1_center)
+            self.screen.blit(surf0, text0_rect)
+            self.screen.blit(surf1, text1_rect)
+
+            pygame.display.flip()
+            return
+
         self.draw_routes()
 
-        # 2) Miasta (jedna pętla!)
         font = pygame.font.Font(None, 24)
         for city in self.cities:
             x, y = self.scale_coordinates(*city.point)
@@ -81,7 +135,7 @@ class GUI:
             text_surf = font.render(city.name, True, (0, 0, 0))
             outline_surf = font.render(city.name, True, (255, 255, 255))
 
-            # white contur
+            # white contour
             for dx in (-1, 0, 1):
                 for dy in (-1, 0, 1):
                     if dx == 0 and dy == 0:
@@ -101,6 +155,8 @@ class GUI:
 
         if self.if_draw_destination_tickets_to_choose:
             self.draw_destination_tickets_to_choose()
+
+        pygame.display.flip()
 
     def draw_player_trains(self, conn: CityConnection, parallel_shift=0):
         """Draw small train‐car rectangles on *this* route, with the same shift."""
@@ -612,11 +668,24 @@ class GUI:
 
         clicked_cities = set()
         while True:
+            if getattr(self, "parallel_choice_mode", False):
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        pygame.quit()
+                        exit(0)
 
+                    if event.type == pygame.MOUSEBUTTONDOWN:
+                        pos = event.pos
+                        if self.parallel_rects[0] and self.parallel_rects[0].collidepoint(pos):
+                            self.parallel_choice_mode = False
+                            return 0, "parallel_choice"
+                        if self.parallel_rects[1] and self.parallel_rects[1].collidepoint(pos):
+                            self.parallel_choice_mode = False
+                            return 1, "parallel_choice"
+                pygame.time.delay(10)
+                continue
             for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    running = Falsecities[1]
-                elif event.type == pygame.MOUSEBUTTONDOWN:
+                if event.type == pygame.MOUSEBUTTONDOWN:
 
                     city = self.get_clicked_city(event)
                     if city:

@@ -383,8 +383,6 @@ class Game:
         draw_cards = list()
 
         while not move_made:
-            
-
             action = self.gui.get_player_action()
             time.sleep(1)
             print(action)
@@ -398,72 +396,101 @@ class Game:
 
                 match choice:
                     case 1:
-
                         self.draw_card(player)
                         move_made = True
                     case 2:
-
                         if self.draw_destination_tickets(player) != None:
                             move_made = True
-
                     case 3:
-
                         conn = self.choose_conn(player)
-
                         if conn != None and self.claim_conn(player, conn):
                             move_made = True
-
                         self.check_for_accomplished_tickets(player)
-                    
                     case _:
                         print("Invalid choice. Please try again.")
-                
             else:
-
-                if action == "train_cards_deck": 
+                if action == "train_cards_deck":
                     # drawing from the deck
-                     
                     card = self.train_cards_deck.draw_card()
                     player.train_cards.append(card)
-
                     draw_cards.append(card)
-                    
                     if len(draw_cards) == 2:
-                        
                         move_made = True
+                    continue
 
                 elif action == "destination_tickets_deck":
                     self.draw_destination_tickets(player, 3, 1)
                     move_made = True
+                    continue
+
+                # === Handle a click on one of the two parallel-choice rectangles ===
+                if action[1] == "parallel_choice":
+                    idx = action[0]  # 0 or 1
+                    chosen_conn = self.gui.parallel_conns[idx]
+                    print(f"Player chose parallel route: {chosen_conn}")
+
+                    # Turn off parallel‐choice mode now that one rectangle was clicked
+                    self.gui.parallel_choice_mode = False
+
+                    # Attempt to claim the chosen route
+                    if self.claim_conn(player, chosen_conn):
+                        print(f"{player.name} successfully claimed: {chosen_conn}")
+                        self.check_for_accomplished_tickets(player)
+                        move_made = True
+                    else:
+                        print("Not enough cards to claim this parallel route.")
+                    continue
+
+                # === Handle clicking two cities (might be one or two possible connections) ===
                 elif action[1] == "create_connection":
-                    # creating connection from set of selected cities
+                    # Extract the two clicked cities
                     cities = action[0]
                     city1 = cities.pop()
                     city2 = cities.pop()
 
-                    cities_connections = list(dict.fromkeys(city1.get_all_connections_between_cities(city2)))
+                    cities_connections = list(
+                        dict.fromkeys(city1.get_all_connections_between_cities(city2))
+                    )
 
                     if len(cities_connections) == 0:
                         print("No connection exists between the chosen cities.")
                         continue
-                    else:    
+
+                    # If there is exactly one route, claim it immediately
+                    if len(cities_connections) == 1:
                         conn = cities_connections[0]
                         print(f"Chosen connection: {conn}")
-
                         if self.claim_conn(player, conn):
                             move_made = True
                             self.check_for_accomplished_tickets(player)
+                        continue
 
+                    # If there are two parallel routes, enter parallel‐choice mode
+                    elif len(cities_connections) == 2:
+                        self.gui.parallel_conns = cities_connections[:]  # store both routes
+                        self.gui.parallel_choice_mode = True
+                        print(
+                            "Two parallel routes detected. Waiting for player to click a rectangle..."
+                        )
+                        continue
+
+                    else:
+                        # In case there happen to be more than two (rare), just take the first
+                        conn = cities_connections[0]
+                        if self.claim_conn(player, conn):
+                            move_made = True
+                            self.check_for_accomplished_tickets(player)
+                        continue
+
+                # === Handle clicking an open‐cards pile index ===
                 elif action[1] == "open_card_index":
-                    # assuming action is the index of the open card
-
                     index = action[0]
                     if index < 0 or index >= len(self.open_cards_deck.cards):
                         print("Invalid index. Please try again.")
                         continue
                     if (
-                        self.open_cards_deck.cards[index] == TrainCard.LOCOMOTIVE
-                        and len(draw_cards) == 1
+                            self.open_cards_deck.cards[index] == TrainCard.LOCOMOTIVE
+                            and len(draw_cards) == 1
                     ):
                         print(
                             "You cannot draw a locomotive card from the open cards after drawing one."
@@ -473,13 +500,17 @@ class Game:
                     card = self.open_cards_deck.draw_card(index)
                     player.train_cards.append(card)
                     self.open_cards_deck.add_card(self.train_cards_deck.draw_card())
-
                     draw_cards.append(card)
 
-                    if len(draw_cards) == 2 or card  == TrainCard.LOCOMOTIVE:
+                    if len(draw_cards) == 2 or card == TrainCard.LOCOMOTIVE:
                         move_made = True
-                    
+                    continue
 
+                # === Otherwise, nothing recognized—skip and repaint ===
+                else:
+                    continue
+
+        # After move_made == True, finish turn
         time.sleep(1)
         self.turn_number += 1
         self.current_player_index = (self.current_player_index + 1) % len(self.players)
