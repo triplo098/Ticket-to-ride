@@ -56,6 +56,9 @@ On their turn, a player chooses **one** action:
 - Final round: All players (including the trigger) get one last turn.  
 - Winner: Highest score after tallying routes, tickets, and bonuses .  
 
+#### **5. Game Demo**  
+https://github.com/user-attachments/assets/be13f7ac-e976-47c8-a44a-cf48c53dd873
+
 
 ## Resources
 - [Ticket to ride Wikipedia](https://en.wikipedia.org/wiki/Ticket_to_Ride_(board_game))
